@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		633AE4161C00CDB6003063F1 /* shaders.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 633AE4141C00CDB6003063F1 /* shaders.cpp */; settings = {ASSET_TAGS = (); }; };
 		63E940EF1C00C9BF00E6B27F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63E940EE1C00C9BF00E6B27F /* main.cpp */; };
 		63E940FA1C00CABD00E6B27F /* maths_funcs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63E940F51C00CABD00E6B27F /* maths_funcs.cpp */; settings = {ASSET_TAGS = (); }; };
 		63E940FC1C00CAE200E6B27F /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63E940FB1C00CAE200E6B27F /* OpenGL.framework */; };
@@ -27,6 +28,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		633AE4141C00CDB6003063F1 /* shaders.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = shaders.cpp; sourceTree = "<group>"; };
+		633AE4151C00CDB6003063F1 /* shaders.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = shaders.hpp; sourceTree = "<group>"; };
 		63E940EB1C00C9BF00E6B27F /* opengl-game */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "opengl-game"; sourceTree = BUILT_PRODUCTS_DIR; };
 		63E940EE1C00C9BF00E6B27F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		63E940F51C00CABD00E6B27F /* maths_funcs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = maths_funcs.cpp; sourceTree = "<group>"; };
@@ -81,6 +84,8 @@
 				63E940F81C00CABD00E6B27F /* Shaders */,
 				63E940F91C00CABD00E6B27F /* stb_image.h */,
 				63E940EE1C00C9BF00E6B27F /* main.cpp */,
+				633AE4141C00CDB6003063F1 /* shaders.cpp */,
+				633AE4151C00CDB6003063F1 /* shaders.hpp */,
 			);
 			path = "opengl-game";
 			sourceTree = "<group>";
@@ -141,6 +146,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				633AE4161C00CDB6003063F1 /* shaders.cpp in Sources */,
 				63E940EF1C00C9BF00E6B27F /* main.cpp in Sources */,
 				63E940FA1C00CABD00E6B27F /* maths_funcs.cpp in Sources */,
 			);
