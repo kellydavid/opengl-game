@@ -1,56 +1,19 @@
 #include <GLUT/GLUT.h>
 #include <OpenGl/gl3.h>
 #include <iostream>
+#include <math.h>
 #include "maths_funcs.h"
 #include "shaders.hpp"
-
-// Assimp includes
-
-#include <assimp/cimport.h> // C importer
-#include <assimp/scene.h> // collects data
-#include <assimp/postprocess.h> // various extra operations
-#include <stdio.h>
-#include <math.h>
-#include <vector> // STL dynamic memory.
-
-// STB image loading header
-#define STB_IMAGE_IMPLEMENTATION
-#include "stb_image.h"
-
-/*----------------------------------------------------------------------------
- MESH TO LOAD
- ----------------------------------------------------------------------------*/
-// this mesh is a dae file format but you should be able to use any other format too, obj is typically what is used
-// put the mesh in your project directory, or provide a filepath for it here
-#define RELATIVE_PATH_TO_MODELS "../../opengl-game/Models/"
-#define VEHICLE_MESH "../../opengl-game/Models/vehicle.dae"
-#define STREET_MESH "../../opengl-game/Models/street2.obj"
-#define VEHICLE_MODEL 0
-#define STREET_MODEL 1
-/*----------------------------------------------------------------------------
- ----------------------------------------------------------------------------*/
+#include "model.hpp"
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 using namespace std;
 
-// Class to represent the data associated with each mesh
-class MeshData{
-public:
-    string file_name;
-    unsigned int vao;
-    std::vector<float> g_vp, g_vn, g_vt;
-    int g_point_count = 0;
-    int num_textures = 0;
-    GLuint *tex_array; // array of tex pointers
-    int num_meshes = 0;
-    int **mesh_vertex_start_end; // array storing start and end indices of vertices
-    int *mesh_material_index; // the index refers to the mesh and the value refers to the index of the material
-};
-int number_of_models = 2;
-string *mesh_filenames = new string[number_of_models]{VEHICLE_MESH, STREET_MESH};
-MeshData *meshes = new MeshData[number_of_models];
+int number_of_models = NUMBER_MODELS;
+string *model_filenames = new string[number_of_models]{VEHICLE_MODEL, STREET_MODEL};
+ModelData *models = new ModelData[number_of_models];
 
 int width = 800;
 int height = 800;
@@ -88,104 +51,21 @@ ModelTransform vehicle_transform;
 
 GLuint shaderProgramID;
 
-bool load_texture (const char* file_name, GLuint* tex);
-
-#pragma region MESH LOADING
-/*----------------------------------------------------------------------------
- MESH LOADING FUNCTION
- ----------------------------------------------------------------------------*/
-
-bool load_mesh (MeshData *meshData) {
-    const aiScene* scene = aiImportFile (meshData->file_name.c_str(), aiProcess_Triangulate); // TRIANGLES!
-    fprintf (stderr, "Reading mesh %s\n", meshData->file_name.c_str());
-    if (!scene) {
-        fprintf (stderr, "ERROR: reading mesh %s\n", meshData->file_name.c_str());
-        return false;
-    }
-    printf ("  %i animations\n", scene->mNumAnimations);
-    printf ("  %i cameras\n", scene->mNumCameras);
-    printf ("  %i lights\n", scene->mNumLights);
-    printf ("  %i materials\n", scene->mNumMaterials);
-    printf ("  %i meshes\n", scene->mNumMeshes);
-    printf ("  %i textures\n", scene->mNumTextures);
-    
-    meshData->num_meshes = scene->mNumMeshes;
-    meshData->mesh_vertex_start_end = new int*[meshData->num_meshes];
-    meshData->mesh_material_index = new int[meshData->num_meshes];
-    for (unsigned int m_i = 0; m_i < scene->mNumMeshes; m_i++) {
-        const aiMesh* mesh = scene->mMeshes[m_i];
-        printf ("    %i vertices in mesh\n", mesh->mNumVertices);
-        meshData->mesh_vertex_start_end[m_i] = new int[2];
-        meshData->mesh_vertex_start_end[m_i][0] = meshData->g_point_count;
-        meshData->g_point_count += mesh->mNumVertices;
-        meshData->mesh_vertex_start_end[m_i][1] = meshData->g_point_count;
-        meshData->mesh_material_index[m_i] = mesh->mMaterialIndex;
-        //cout << meshData->mesh_material_index[m_i] << endl;
-        for (unsigned int v_i = 0; v_i < mesh->mNumVertices; v_i++) {
-            if (mesh->HasPositions ()) {
-                const aiVector3D* vp = &(mesh->mVertices[v_i]);
-                //printf ("      vp %i (%f,%f,%f)\n", v_i, vp->x, vp->y, vp->z);
-                meshData->g_vp.push_back (vp->x);
-                meshData->g_vp.push_back (vp->y);
-                meshData->g_vp.push_back (vp->z);
-            }
-            if (mesh->HasNormals ()) {
-                const aiVector3D* vn = &(mesh->mNormals[v_i]);
-                //printf ("      vn %i (%f,%f,%f)\n", v_i, vn->x, vn->y, vn->z);
-                meshData->g_vn.push_back (vn->x);
-                meshData->g_vn.push_back (vn->y);
-                meshData->g_vn.push_back (vn->z);
-            }
-            if (mesh->HasTextureCoords (0)) {
-                const aiVector3D* vt = &(mesh->mTextureCoords[0][v_i]);
-                //printf ("      vt %i (%f,%f)\n", v_i, vt->x, vt->y);
-                meshData->g_vt.push_back (vt->x);
-                meshData->g_vt.push_back (vt->y);
-            }
-            if (mesh->HasTangentsAndBitangents ()) {
-                // NB: could store/print tangents here
-            }
-        }
-    }
-    
-    // if scene has materials then load each texture
-    if(scene->HasMaterials()){
-        // bind the mesh vao
-        glBindVertexArray(meshData->vao);
-        meshData->num_textures = scene->mNumMaterials;
-        meshData->tex_array = new GLuint[scene->mNumMaterials];
-        for(int i = 0; i < scene->mNumMaterials; i++){
-            for(int j = 0; j < scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE); j++){
-                aiString path;
-                scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, j, &path);
-                char relpath[] = RELATIVE_PATH_TO_MODELS;
-                // if path == "" then load the colour data instead TODO
-                load_texture(strcat(relpath, path.C_Str()), &(meshData->tex_array[i]));
-            }
-        }
-    }
-    
-    aiReleaseImport (scene);
-    return true;
-}
-
-#pragma endregion MESH LOADING
-
 // VBO Functions - click on + to expand
 #pragma region VBO_FUNCTIONS
 
-void generateObjectBufferMesh(MeshData *mesh) {
+void generateObjectBufferMesh(ModelData *model) {
     /*----------------------------------------------------------------------------
-     LOAD MESH HERE AND COPY INTO BUFFERS
+     LOAD model HERE AND COPY INTO BUFFERS
      ----------------------------------------------------------------------------*/
     
-    //Note: you may get an error "vector subscript out of range" if you are using this code for a mesh that doesnt have positions and normals
+    //Note: you may get an error "vector subscript out of range" if you are using this code for a model that doesnt have positions and normals
     //Might be an idea to do a check for that before generating and binding the buffer.
     
     // bind the vertex array object
-    glBindVertexArray(mesh->vao);
+    glBindVertexArray(model->vao);
     
-    load_mesh (mesh);
+    load_model (model);
     unsigned int vp_vbo = 0;
     loc1 = glGetAttribLocation(shaderProgramID, "vertex_position");
     loc2 = glGetAttribLocation(shaderProgramID, "vertex_normal");
@@ -193,17 +73,17 @@ void generateObjectBufferMesh(MeshData *mesh) {
     
     glGenBuffers (1, &vp_vbo);
     glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
-    glBufferData (GL_ARRAY_BUFFER, mesh->g_point_count * 3 * sizeof (float), &(mesh->g_vp[0]), GL_STATIC_DRAW);
+    glBufferData (GL_ARRAY_BUFFER, model->g_point_count * 3 * sizeof (float), &(model->g_vp[0]), GL_STATIC_DRAW);
     unsigned int vn_vbo = 0;
     glGenBuffers (1, &vn_vbo);
     glBindBuffer (GL_ARRAY_BUFFER, vn_vbo);
-    glBufferData (GL_ARRAY_BUFFER, mesh->g_point_count * 3 * sizeof (float), &(mesh->g_vn[0]), GL_STATIC_DRAW);
+    glBufferData (GL_ARRAY_BUFFER, model->g_point_count * 3 * sizeof (float), &(model->g_vn[0]), GL_STATIC_DRAW);
     
     //	This is for texture coordinates which you don't currently need, so I have commented it out
     unsigned int vt_vbo = 0;
     glGenBuffers (1, &vt_vbo);
     glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
-    glBufferData (GL_ARRAY_BUFFER, mesh->g_point_count * 2 * sizeof (float), &mesh->g_vt[0], GL_STATIC_DRAW);
+    glBufferData (GL_ARRAY_BUFFER, model->g_point_count * 2 * sizeof (float), &model->g_vt[0], GL_STATIC_DRAW);
     
     glEnableVertexAttribArray (loc1);
     glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
@@ -226,63 +106,6 @@ void rotate_mat4(mat4 *mat, vec3 rotation){
     *mat = rotate_x_deg(*mat, rotation.v[0]);
     *mat = rotate_y_deg(*mat, rotation.v[1]);
     *mat = rotate_z_deg(*mat, rotation.v[2]);
-}
-
-bool load_texture (const char* file_name, GLuint* tex) {
-    int x, y, n;
-    int force_channels = 4;
-    unsigned char* image_data = stbi_load (file_name, &x, &y, &n, force_channels);
-    if (!image_data) {
-        fprintf (stderr, "ERROR: could not load %s\n", file_name);
-        return false;
-    }
-    // NPOT check
-    if ((x & (x - 1)) != 0 || (y & (y - 1)) != 0) {
-        fprintf (
-                 stderr, "WARNING: texture %s is not power-of-2 dimensions\n", file_name
-                 );
-    }
-    int width_in_bytes = x * 4;
-    unsigned char *top = NULL;
-    unsigned char *bottom = NULL;
-    unsigned char temp = 0;
-    int half_height = y / 2;
-    
-    for (int row = 0; row < half_height; row++) {
-        top = image_data + row * width_in_bytes;
-        bottom = image_data + (y - row - 1) * width_in_bytes;
-        for (int col = 0; col < width_in_bytes; col++) {
-            temp = *top;
-            *top = *bottom;
-            *bottom = temp;
-            top++;
-            bottom++;
-        }
-    }
-    glGenTextures (1, tex);
-    glActiveTexture (GL_TEXTURE0);
-    glBindTexture (GL_TEXTURE_2D, *tex);
-    glTexImage2D (
-                  GL_TEXTURE_2D,
-                  0,
-                  GL_RGBA,
-                  x,
-                  y,
-                  0,
-                  GL_RGBA,
-                  GL_UNSIGNED_BYTE,
-                  image_data
-                  );
-    glGenerateMipmap (GL_TEXTURE_2D);
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    GLfloat max_aniso = 0.0f;
-    glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY_EXT, &max_aniso);
-    // set the maximum!
-    glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_aniso);
-    return true;
 }
 
 void display(){
@@ -314,14 +137,14 @@ void display(){
     glUniformMatrix4fv (matrix_location, 1, GL_FALSE, model.m);
     
     // draw street
-    glBindVertexArray(meshes[1].vao);
-    for(int i = 0; i < meshes[1].num_meshes; i++){
-        //cout << "Mesh #" << i<< " material index " << meshes[1].mesh_material_index[i] << endl;
-        glBindTexture(GL_TEXTURE_2D, meshes[1].tex_array[meshes[1].mesh_material_index[i]]);
-        glDrawArrays(GL_TRIANGLES, meshes[1].mesh_vertex_start_end[i][0], meshes[1].mesh_vertex_start_end[i][1] - meshes[1].mesh_vertex_start_end[i][0]);
+    glBindVertexArray(models[1].vao);
+    for(int i = 0; i < models[1].num_meshes; i++){
+        //cout << "Mesh #" << i<< " material index " << models[1].mesh_material_index[i] << endl;
+        glBindTexture(GL_TEXTURE_2D, models[1].tex_array[models[1].mesh_material_index[i]]);
+        glDrawArrays(GL_TRIANGLES, models[1].mesh_vertex_start_end[i][0], models[1].mesh_vertex_start_end[i][1] - models[1].mesh_vertex_start_end[i][0]);
     }
-    glBindTexture(GL_TEXTURE_2D, meshes[1].tex_array[2]);
-    glDrawArrays (GL_TRIANGLES, 0, meshes[1].g_point_count);
+    glBindTexture(GL_TEXTURE_2D, models[1].tex_array[2]);
+    glDrawArrays (GL_TRIANGLES, 0, models[1].g_point_count);
     
     // rotate and translate vehicle
     model = identity_mat4 ();
@@ -333,8 +156,8 @@ void display(){
     glUniformMatrix4fv (matrix_location, 1, GL_FALSE, model.m);
     
     // draw vehicle
-    glBindVertexArray(meshes[0].vao);
-    glDrawArrays (GL_TRIANGLES, 0, meshes[0].g_point_count);
+    glBindVertexArray(models[0].vao);
+    glDrawArrays (GL_TRIANGLES, 0, models[0].g_point_count);
     
     
     glutSwapBuffers();
@@ -360,16 +183,16 @@ void updateScene() {
 void setupVAOs(){
     for(int i = 0; i < number_of_models; i++){
         // create vao for model
-        meshes[i].vao = 0;
-        glGenVertexArrays(1, &meshes[i].vao);
-        glBindVertexArray(meshes[i].vao);
+        models[i].vao = 0;
+        glGenVertexArrays(1, &models[i].vao);
+        glBindVertexArray(models[i].vao);
     }
 }
 
 void loadModels(){
     for(int i = 0; i < number_of_models; i++){
-        meshes[i].file_name = mesh_filenames[i];
-        generateObjectBufferMesh(&meshes[i]);
+        models[i].file_name = model_filenames[i];
+        generateObjectBufferMesh(&models[i]);
         // load textures
     }
 }
