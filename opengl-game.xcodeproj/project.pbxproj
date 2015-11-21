@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		63E940EF1C00C9BF00E6B27F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63E940EE1C00C9BF00E6B27F /* main.cpp */; };
+		63E940FA1C00CABD00E6B27F /* maths_funcs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63E940F51C00CABD00E6B27F /* maths_funcs.cpp */; settings = {ASSET_TAGS = (); }; };
+		63E940FC1C00CAE200E6B27F /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63E940FB1C00CAE200E6B27F /* OpenGL.framework */; };
+		63E940FE1C00CAE800E6B27F /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63E940FD1C00CAE800E6B27F /* GLUT.framework */; };
+		63E941001C00CC4500E6B27F /* libassimp.3.1.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 63E940FF1C00CC4500E6B27F /* libassimp.3.1.1.dylib */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,6 +29,14 @@
 /* Begin PBXFileReference section */
 		63E940EB1C00C9BF00E6B27F /* opengl-game */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "opengl-game"; sourceTree = BUILT_PRODUCTS_DIR; };
 		63E940EE1C00C9BF00E6B27F /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
+		63E940F51C00CABD00E6B27F /* maths_funcs.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = maths_funcs.cpp; sourceTree = "<group>"; };
+		63E940F61C00CABD00E6B27F /* maths_funcs.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = maths_funcs.h; sourceTree = "<group>"; };
+		63E940F71C00CABD00E6B27F /* Models */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Models; sourceTree = "<group>"; };
+		63E940F81C00CABD00E6B27F /* Shaders */ = {isa = PBXFileReference; lastKnownFileType = folder; path = Shaders; sourceTree = "<group>"; };
+		63E940F91C00CABD00E6B27F /* stb_image.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = stb_image.h; sourceTree = "<group>"; };
+		63E940FB1C00CAE200E6B27F /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
+		63E940FD1C00CAE800E6B27F /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
+		63E940FF1C00CC4500E6B27F /* libassimp.3.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.3.1.1.dylib; path = "opengl-game/lib/libassimp.3.1.1.dylib"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -32,6 +44,9 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				63E941001C00CC4500E6B27F /* libassimp.3.1.1.dylib in Frameworks */,
+				63E940FE1C00CAE800E6B27F /* GLUT.framework in Frameworks */,
+				63E940FC1C00CAE200E6B27F /* OpenGL.framework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -41,6 +56,9 @@
 		63E940E21C00C9BF00E6B27F = {
 			isa = PBXGroup;
 			children = (
+				63E940FF1C00CC4500E6B27F /* libassimp.3.1.1.dylib */,
+				63E940FD1C00CAE800E6B27F /* GLUT.framework */,
+				63E940FB1C00CAE200E6B27F /* OpenGL.framework */,
 				63E940ED1C00C9BF00E6B27F /* opengl-game */,
 				63E940EC1C00C9BF00E6B27F /* Products */,
 			);
@@ -57,6 +75,11 @@
 		63E940ED1C00C9BF00E6B27F /* opengl-game */ = {
 			isa = PBXGroup;
 			children = (
+				63E940F51C00CABD00E6B27F /* maths_funcs.cpp */,
+				63E940F61C00CABD00E6B27F /* maths_funcs.h */,
+				63E940F71C00CABD00E6B27F /* Models */,
+				63E940F81C00CABD00E6B27F /* Shaders */,
+				63E940F91C00CABD00E6B27F /* stb_image.h */,
 				63E940EE1C00C9BF00E6B27F /* main.cpp */,
 			);
 			path = "opengl-game";
@@ -119,6 +142,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				63E940EF1C00C9BF00E6B27F /* main.cpp in Sources */,
+				63E940FA1C00CABD00E6B27F /* maths_funcs.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -205,6 +229,8 @@
 		63E940F31C00C9BF00E6B27F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/assimp/3.1.1/include;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/opengl-game/lib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -212,6 +238,8 @@
 		63E940F41C00C9BF00E6B27F /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				HEADER_SEARCH_PATHS = /usr/local/Cellar/assimp/3.1.1/include;
+				LIBRARY_SEARCH_PATHS = "$(PROJECT_DIR)/opengl-game/lib";
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -235,6 +263,7 @@
 				63E940F41C00C9BF00E6B27F /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
