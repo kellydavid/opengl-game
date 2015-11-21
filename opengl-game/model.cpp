@@ -7,10 +7,6 @@
 //
 
 #include "model.hpp"
-#include <GLUT/GLUT.h>
-#include <assimp/cimport.h> // C importer
-#include <assimp/scene.h> // collects data
-#include <assimp/postprocess.h> // various extra operations
 
 // STB image loading header
 #define STB_IMAGE_IMPLEMENTATION
@@ -18,6 +14,18 @@
 
 string ModelData::getPath(){
     return RELATIVE_PATH_TO_MODELS + file_name;
+}
+
+int MeshData::getVerts(){
+    return vertex_end - vertex_start;
+}
+
+void TextureData::setPath(aiString path){
+    this->path = path.C_Str();
+}
+
+string TextureData::getRelPath(){
+    return RELATIVE_PATH_TO_MODELS + path;
 }
 
 // loads in model from file
@@ -36,16 +44,14 @@ bool load_model (ModelData *model) {
     printf ("  %i textures\n", scene->mNumTextures);
     
     model->num_meshes = scene->mNumMeshes;
-    model->mesh_vertex_start_end = new int*[model->num_meshes];
-    model->mesh_material_index = new int[model->num_meshes];
+    model->meshes = new MeshData[model->num_meshes];
     for (unsigned int m_i = 0; m_i < scene->mNumMeshes; m_i++) {
         const aiMesh* mesh = scene->mMeshes[m_i];
         printf ("    %i vertices in mesh\n", mesh->mNumVertices);
-        model->mesh_vertex_start_end[m_i] = new int[2];
-        model->mesh_vertex_start_end[m_i][0] = model->g_point_count;
+        model->meshes[m_i].vertex_start = model->g_point_count;
         model->g_point_count += mesh->mNumVertices;
-        model->mesh_vertex_start_end[m_i][1] = model->g_point_count;
-        model->mesh_material_index[m_i] = mesh->mMaterialIndex;
+        model->meshes[m_i].vertex_end = model->g_point_count;
+        model->meshes[m_i].texture_index = mesh->mMaterialIndex;
         //cout << model->mesh_material_index[m_i] << endl;
         for (unsigned int v_i = 0; v_i < mesh->mNumVertices; v_i++) {
             if (mesh->HasPositions ()) {
@@ -78,15 +84,15 @@ bool load_model (ModelData *model) {
     if(scene->HasMaterials()){
         // bind the mesh vao
         glBindVertexArray(model->vao);
-        model->num_textures = scene->mNumMaterials;
-        model->tex_array = new GLuint[scene->mNumMaterials];
+        model->num_texs = scene->mNumMaterials;
+        model->textures = new TextureData[model->num_texs];
         for(int i = 0; i < scene->mNumMaterials; i++){
             for(int j = 0; j < scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE); j++){
                 aiString path;
                 scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, j, &path);
-                char relpath[] = RELATIVE_PATH_TO_MODELS;
+                model->textures[i].setPath(path);
                 // if path == "" then load the colour data instead TODO
-                load_texture(strcat(relpath, path.C_Str()), &(model->tex_array[i]));
+                load_texture(model->textures[i].getRelPath().c_str(), &model->textures[i].tex);
             }
         }
     }

@@ -140,11 +140,9 @@ void display(){
     glBindVertexArray(models[1].vao);
     for(int i = 0; i < models[1].num_meshes; i++){
         //cout << "Mesh #" << i<< " material index " << models[1].mesh_material_index[i] << endl;
-        glBindTexture(GL_TEXTURE_2D, models[1].tex_array[models[1].mesh_material_index[i]]);
-        glDrawArrays(GL_TRIANGLES, models[1].mesh_vertex_start_end[i][0], models[1].mesh_vertex_start_end[i][1] - models[1].mesh_vertex_start_end[i][0]);
+        glBindTexture(GL_TEXTURE_2D, models[1].textures[models[1].meshes[i].texture_index].tex);
+        glDrawArrays(GL_TRIANGLES, models[1].meshes[i].vertex_start, models[1].meshes[i].getVerts());
     }
-    glBindTexture(GL_TEXTURE_2D, models[1].tex_array[2]);
-    glDrawArrays (GL_TRIANGLES, 0, models[1].g_point_count);
     
     // rotate and translate vehicle
     model = identity_mat4 ();
