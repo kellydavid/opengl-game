@@ -28,7 +28,7 @@ public:
 
 class CameraTransform{
 public:
-    const float fraction = 2.5;
+    const float fraction = 5.5;
     const float angle_inc = 0.1;
     float angle = 0.0;
     float lx = 0.0, lz = -1.0f;
