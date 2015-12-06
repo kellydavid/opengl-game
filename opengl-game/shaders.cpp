@@ -26,7 +26,7 @@ char* readShaderSource(const char* shaderFile) {
     return buf;
 }
 
-static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
+void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
 {
     // create a shader object
     GLuint ShaderObj = glCreateShader(ShaderType);
@@ -54,8 +54,7 @@ static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum Shad
     glAttachShader(ShaderProgram, ShaderObj);
 }
 
-GLuint CompileShaders()
-{
+GLuint CreateShaderProgram(){
     //Start the process of setting up our shaders by creating a program ID
     //Note: we will link all the shaders together into this ID
     GLuint shaderProgramID = glCreateProgram();
@@ -63,15 +62,11 @@ GLuint CompileShaders()
         fprintf(stderr, "Error creating shader program\n");
         exit(1);
     }
-    
-    // Create two shader objects, one for the vertex, and one for the fragment shader
-#ifdef VERTEX_SHADER
-    AddShader(shaderProgramID, VERTEX_SHADER, GL_VERTEX_SHADER);
-#endif
-#ifdef FRAGMENT_SHADER
-    AddShader(shaderProgramID, FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
-#endif
-    
+    return shaderProgramID;
+}
+
+GLuint CompileShaders(GLuint shaderProgramID)
+{
     GLint Success = 0;
     GLchar ErrorLog[1024] = { 0 };
     // After compiling all shader objects and attaching them to the program, we can finally link it

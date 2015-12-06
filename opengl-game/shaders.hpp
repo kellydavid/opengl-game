@@ -16,14 +16,19 @@
 /* -----------------------
  SHADER FILEPATHS
  --------------------------*/
-#define VERTEX_SHADER "../../opengl-game/Shaders/simpleVertexShader.glsl"
-#define FRAGMENT_SHADER "../../opengl-game/Shaders/simpleFragmentShader.glsl"
+#define COLOUR_VERTEX_SHADER "../../opengl-game/Shaders/colourVertexShader.glsl"
+#define COLOUR_FRAGMENT_SHADER "../../opengl-game/Shaders/colourFragmentShader.glsl"
+#define TEXTURE_VERTEX_SHADER "../../opengl-game/Shaders/textureVertexShader.glsl"
+#define TEXTURE_FRAGMENT_SHADER "../../opengl-game/Shaders/textureFragmentShader.glsl"
+
 
 // Create a NULL-terminated string by reading the provided file
 char* readShaderSource(const char* shaderFile);
 
-static void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
+void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
 
-GLuint CompileShaders();
+GLuint CreateShaderProgram();
+
+GLuint CompileShaders(GLuint shaderProgramID);
 
 #endif /* shaders_hpp */

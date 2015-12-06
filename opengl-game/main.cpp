@@ -5,6 +5,7 @@
 #include "maths_funcs.h"
 #include "shaders.hpp"
 #include "model.hpp"
+#include "utilities.hpp"
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
@@ -20,36 +21,11 @@ int height = 800;
 
 GLuint loc1, loc2, loc3;
 
-class ModelTransform{
-public:
-    vec3 translation = vec3(0.0, 0.0, 0.0);
-    vec3 rotation = vec3(0.0, 0.0, 0.0);
-    vec3 scale = vec3(0.0, 0.0, 0.0);
-    
-    void print_values(){
-        cout << "Translation: (" << translation.v[0] << ", " << translation.v[1] << ", " << translation.v[2] << ")" << endl;
-        cout << "Rotation: (" << rotation.v[0] << ", " << rotation.v[1] << ", " << rotation.v[2] << ")" << endl;
-        cout << "Scale: (" << scale.v[0] << ", " << scale.v[1] << ", " << scale.v[2] << ")" << endl;
-    }
-};
-
-class CameraTransform{
-public:
-    const float fraction = 2.5;
-    const float angle_inc = 0.1;
-    float angle = 0.0;
-    float lx = 0.0, lz = -1.0f;
-    vec3 eye;
-    
-    vec3 look(){
-        return vec3(eye.v[0] + lx, eye.v[1], eye.v[2] + lz);
-    }
-};
-
 CameraTransform camera_transform;
 ModelTransform vehicle_transform;
 
-GLuint shaderProgramID;
+GLuint colourProgramID;
+GLuint textureProgramID;
 
 // VBO Functions - click on + to expand
 #pragma region VBO_FUNCTIONS
@@ -65,15 +41,18 @@ void generateObjectBufferMesh(ModelData *model) {
     // bind the vertex array object
     glBindVertexArray(model->vao);
     
-    load_model (model);
-    unsigned int vp_vbo = 0;
-    loc1 = glGetAttribLocation(shaderProgramID, "vertex_position");
-    loc2 = glGetAttribLocation(shaderProgramID, "vertex_normal");
-    loc3 = glGetAttribLocation(shaderProgramID, "vertex_texture");
+    loc1 = glGetAttribLocation(textureProgramID, "vertex_position");
+    loc2 = glGetAttribLocation(textureProgramID, "vertex_normal");
+    loc3 = glGetAttribLocation(textureProgramID, "vertex_texture");
     
+    load_model (model);
+    // load in vertex positions
+    unsigned int vp_vbo = 0;
     glGenBuffers (1, &vp_vbo);
     glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
     glBufferData (GL_ARRAY_BUFFER, model->g_point_count * 3 * sizeof (float), &(model->g_vp[0]), GL_STATIC_DRAW);
+    
+    // load in vertex normals
     unsigned int vn_vbo = 0;
     glGenBuffers (1, &vn_vbo);
     glBindBuffer (GL_ARRAY_BUFFER, vn_vbo);
@@ -102,12 +81,6 @@ void generateObjectBufferMesh(ModelData *model) {
 
 #pragma endregion VBO_FUNCTIONS
 
-void rotate_mat4(mat4 *mat, vec3 rotation){
-    *mat = rotate_x_deg(*mat, rotation.v[0]);
-    *mat = rotate_y_deg(*mat, rotation.v[1]);
-    *mat = rotate_z_deg(*mat, rotation.v[2]);
-}
-
 void display(){
     
     // tell GL to only draw onto a pixel if the shape is closer to the viewer
@@ -115,13 +88,13 @@ void display(){
     glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
     glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram (shaderProgramID);
+    glUseProgram (textureProgramID);
     
     
     //Declare your uniform variables that will be used in your shader
-    int matrix_location = glGetUniformLocation (shaderProgramID, "model");
-    int view_mat_location = glGetUniformLocation (shaderProgramID, "view");
-    int proj_mat_location = glGetUniformLocation (shaderProgramID, "proj");
+    int matrix_location = glGetUniformLocation (textureProgramID, "model");
+    int view_mat_location = glGetUniformLocation (textureProgramID, "view");
+    int proj_mat_location = glGetUniformLocation (textureProgramID, "proj");
     
     
     // Root of the Hierarchy
@@ -139,8 +112,19 @@ void display(){
     // draw street
     glBindVertexArray(models[1].vao);
     for(int i = 0; i < models[1].num_meshes; i++){
-        //cout << "Mesh #" << i<< " material index " << models[1].mesh_material_index[i] << endl;
-        glBindTexture(GL_TEXTURE_2D, models[1].textures[models[1].meshes[i].texture_index].tex);
+        //cout << "Mesh #" << i << " material index " << models[1].meshes[i].texture_index << endl;
+        if(models[1].textures[models[1].meshes[i].texture_index].texture){
+            glUseProgram (textureProgramID);
+            glEnable(GL_TEXTURE_2D);
+            glBindTexture(GL_TEXTURE_2D, models[1].textures[models[1].meshes[i].texture_index].tex);
+        }else{
+            glUseProgram(colourProgramID);
+            glDisable(GL_TEXTURE_2D);
+            int color_location = glGetUniformLocation (colourProgramID, "color");
+            aiColor3D color = models[1].textures[models[1].meshes[i].texture_index].color;
+            glUniform3f(color_location, color.r, color.g, color.b);
+            //cout << "Mesh #" << i << " Using color R:" << color.r << " G:" << color.g << " B:" << color.b << endl;
+        }
         glDrawArrays(GL_TRIANGLES, models[1].meshes[i].vertex_start, models[1].meshes[i].getVerts());
     }
     
@@ -209,7 +193,16 @@ void init()
     // intialise transformations
     initialise_transforms();
     // Set up the shaders
-    shaderProgramID = CompileShaders();
+    // program with standard colour fragment shader
+    colourProgramID = CreateShaderProgram();
+    AddShader(colourProgramID, COLOUR_VERTEX_SHADER, GL_VERTEX_SHADER);
+    AddShader(colourProgramID, COLOUR_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
+    colourProgramID = CompileShaders(colourProgramID);
+    // Program with the texture version of fragment shader
+    textureProgramID = CreateShaderProgram();
+    AddShader(textureProgramID, TEXTURE_VERTEX_SHADER, GL_VERTEX_SHADER);
+    AddShader(textureProgramID, TEXTURE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
+    textureProgramID = CompileShaders(textureProgramID);
     // load mesh into a vertex buffer array
     loadModels();
 }

@@ -36,8 +36,10 @@ class ModelData{
 public:
     string file_name; // path to file where model is stored
     unsigned int vao; // points to the vao associated with the model
-    vector<float> g_vp, g_vn, g_vt; // vertex positions, vertex normals, vertex textures (coordinates)
+    vector<float> g_vp, g_vn, g_vt, g_vc; // vertex positions, vertex normals, vertex textures (coordinates)
     int g_point_count = 0; // total count of points
+    int g_vt_point_count = 0;
+    int g_vc_point_count = 0;
     int num_texs = 0; // length of texture pointer array
     TextureData *textures;
     int num_meshes = 0; // number of meshes
@@ -49,9 +51,11 @@ public:
 
 class TextureData{
 public:
+    bool texture;
+    aiColor3D color;
     string path;
     GLuint tex;
-    
+
     void setPath(aiString path);
     
     string getRelPath();

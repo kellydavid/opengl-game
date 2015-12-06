@@ -47,12 +47,11 @@ bool load_model (ModelData *model) {
     model->meshes = new MeshData[model->num_meshes];
     for (unsigned int m_i = 0; m_i < scene->mNumMeshes; m_i++) {
         const aiMesh* mesh = scene->mMeshes[m_i];
-        printf ("    %i vertices in mesh\n", mesh->mNumVertices);
+        //printf ("    %i vertices in mesh\n", mesh->mNumVertices);
         model->meshes[m_i].vertex_start = model->g_point_count;
         model->g_point_count += mesh->mNumVertices;
         model->meshes[m_i].vertex_end = model->g_point_count;
         model->meshes[m_i].texture_index = mesh->mMaterialIndex;
-        //cout << model->mesh_material_index[m_i] << endl;
         for (unsigned int v_i = 0; v_i < mesh->mNumVertices; v_i++) {
             if (mesh->HasPositions ()) {
                 const aiVector3D* vp = &(mesh->mVertices[v_i]);
@@ -87,12 +86,19 @@ bool load_model (ModelData *model) {
         model->num_texs = scene->mNumMaterials;
         model->textures = new TextureData[model->num_texs];
         for(int i = 0; i < scene->mNumMaterials; i++){
-            for(int j = 0; j < scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE); j++){
+            if(scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) != 0){
                 aiString path;
-                scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, j, &path);
+                scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
                 model->textures[i].setPath(path);
-                // if path == "" then load the colour data instead TODO
+                string str = model->textures[i].path;
+                //cout << "path to texture: " << str << endl;
+                //cout << "Texture #" << i << " " << (model->textures[i].texture == true ? "is":"is not") << " a texture image." << endl;
                 load_texture(model->textures[i].getRelPath().c_str(), &model->textures[i].tex);
+                model->textures[i].texture = true;
+            }else{
+                model->textures[i].texture = false;
+                scene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE,model->textures[i].color);
+                //cout << "Texture #" << i << " R:" << model->textures[i].color.r << " G:" << model->textures[i].color.g << " B:" << model->textures[i].color.b << endl;
             }
         }
     }
