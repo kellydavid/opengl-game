@@ -21,6 +21,10 @@
 #define TEXTURE_VERTEX_SHADER "../../opengl-game/Shaders/textureVertexShader.glsl"
 #define TEXTURE_FRAGMENT_SHADER "../../opengl-game/Shaders/textureFragmentShader.glsl"
 
+#define LOCATION_VERTEX_POSITION 0
+#define LOCATION_VERTEX_NORMAL 1
+#define LOCATION_VERTEX_TEXTURE 2
+
 
 // Create a NULL-terminated string by reading the provided file
 char* readShaderSource(const char* shaderFile);

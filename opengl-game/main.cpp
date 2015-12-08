@@ -19,8 +19,6 @@ ModelData *models = new ModelData[number_of_models];
 int width = 800;
 int height = 800;
 
-GLuint loc1, loc2, loc3;
-
 CameraTransform camera_transform;
 ModelTransform vehicle_transform;
 
@@ -44,9 +42,11 @@ void generateObjectBufferMesh(ModelData *model) {
     load_model (model);
     
     //textureProgram
-    loc1 = glGetAttribLocation(colourProgramID, "vertex_position");
-    loc2 = glGetAttribLocation(colourProgramID, "vertex_normal");
-    loc3 = glGetAttribLocation(colourProgramID, "vertex_texture");
+    glUseProgram(textureProgramID);
+    
+    GLuint loc1 = LOCATION_VERTEX_POSITION;
+    GLuint loc2 = LOCATION_VERTEX_NORMAL;
+    GLuint loc3 = LOCATION_VERTEX_TEXTURE;
     
     // load in vertex positions
     unsigned int vp_vbo = 0;
@@ -77,7 +77,6 @@ void generateObjectBufferMesh(ModelData *model) {
     glEnableVertexAttribArray (loc3);
     glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
     glVertexAttribPointer (loc3, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-
 }
 
 
@@ -90,13 +89,13 @@ void display(){
     glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
     glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram (colourProgramID);
+    glUseProgram (textureProgramID);
     
     
     //Declare your uniform variables that will be used in your shader
-    int matrix_location = glGetUniformLocation (colourProgramID, "model");
-    int view_mat_location = glGetUniformLocation (colourProgramID, "view");
-    int proj_mat_location = glGetUniformLocation (colourProgramID, "proj");
+    int matrix_location = glGetUniformLocation (textureProgramID, "model");
+    int view_mat_location = glGetUniformLocation (textureProgramID, "view");
+    int proj_mat_location = glGetUniformLocation (textureProgramID, "proj");
     
     
     // Root of the Hierarchy
@@ -116,11 +115,20 @@ void display(){
     for(int i = 0; i < models[1].num_meshes; i++){
         //cout << "Mesh #" << i << " material index " << models[1].meshes[i].texture_index << endl;
         if(models[1].textures[models[1].meshes[i].texture_index].texture){
-            glUseProgram (colourProgramID);
+            glUseProgram (textureProgramID);
+            glEnableVertexAttribArray(LOCATION_VERTEX_POSITION);
+            glEnableVertexAttribArray(LOCATION_VERTEX_NORMAL);
+            glEnableVertexAttribArray(LOCATION_VERTEX_TEXTURE);
             glBindTexture(GL_TEXTURE_2D, models[1].textures[models[1].meshes[i].texture_index].tex);
+            glDrawArrays(GL_TRIANGLES, models[1].meshes[i].vertex_start, models[1].meshes[i].getVerts());
+            glDisableVertexAttribArray(LOCATION_VERTEX_POSITION);
+            glDisableVertexAttribArray(LOCATION_VERTEX_NORMAL);
+            glDisableVertexAttribArray(LOCATION_VERTEX_TEXTURE);
         }else{
             glUseProgram(colourProgramID);
             glBindVertexArray(models[1].vao);
+            glEnableVertexAttribArray(LOCATION_VERTEX_POSITION);
+            glEnableVertexAttribArray(LOCATION_VERTEX_NORMAL);
             
             int color_location = glGetUniformLocation (colourProgramID, "color");
             aiColor3D color = models[1].textures[models[1].meshes[i].texture_index].color;
@@ -136,8 +144,12 @@ void display(){
             
             glUniform3fv(color_location, 1, color_vec);
             //cout << "Mesh #" << i << " Using color R:" << color.r << " G:" << color.g << " B:" << color.b << endl;
+            
+            glDrawArrays(GL_TRIANGLES, models[1].meshes[i].vertex_start, models[1].meshes[i].getVerts());
+            
+            glDisableVertexAttribArray(LOCATION_VERTEX_POSITION);
+            glDisableVertexAttribArray(LOCATION_VERTEX_NORMAL);
         }
-        glDrawArrays(GL_TRIANGLES, models[1].meshes[i].vertex_start, models[1].meshes[i].getVerts());
     }
     
     // rotate and translate vehicle

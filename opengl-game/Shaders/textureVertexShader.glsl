@@ -1,8 +1,8 @@
 #version 330
 
-in vec3 vertex_position;
-in vec3 vertex_normal;
-in vec2 vertex_texture;
+layout (location = 0)in vec3 vertex_position;
+layout (location = 1)in vec3 vertex_normal;
+layout (location = 2)in vec2 vertex_texture;
 
 out vec2 texture_coordinates;
 out vec3 LightIntensity;
