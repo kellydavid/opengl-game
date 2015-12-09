@@ -6,7 +6,7 @@
 //  Copyright © 2015 David Kelly. All rights reserved.
 //
 
-#include "utilities.hpp"
+#include "transform.hpp"
 
 void ModelTransform::print_values(){
     std::cout << "Translation: (" << translation.v[0] << ", " << translation.v[1] << ", " << translation.v[2] << ")" << std::endl;

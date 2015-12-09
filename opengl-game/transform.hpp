@@ -6,8 +6,8 @@
 //  Copyright © 2015 David Kelly. All rights reserved.
 //
 
-#ifndef utilities_hpp
-#define utilities_hpp
+#ifndef transform_hpp
+#define transform_hpp
 
 #include <OpenGl/gl3.h>
 #include <GLUT/GLUT.h>
@@ -39,4 +39,4 @@ public:
 
 void rotate_mat4(mat4 *mat, vec3 rotation);
 
-#endif /* utilities_hpp */
+#endif /* transform_hpp */
