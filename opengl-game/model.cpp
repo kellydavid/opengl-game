@@ -7,33 +7,79 @@
 //
 
 #include "model.hpp"
+#include "shaders.hpp"
 
 // STB image loading header
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
+/**** ModelData ****/
+
+ModelData::ModelData(){
+}
+
+void ModelData::load_data(string filename){
+    glBindVertexArray(this->vao);
+    set_filename(filename);
+    load_model();
+    generate_object_buffer();
+}
+
 string ModelData::getPath(){
-    return RELATIVE_PATH_TO_MODELS + file_name;
+    return RELATIVE_PATH_TO_MODELS + this->file_name;
 }
 
-int MeshData::getVerts(){
-    return vertex_end - vertex_start;
+void ModelData::set_filename(string file_name){
+    this->file_name = file_name;
 }
 
-void TextureData::setPath(aiString path){
-    this->path = path.C_Str();
+void ModelData::setup_vao(){
+    this->vao = 0;
+    glGenVertexArrays(1, &this->vao);
+    glBindVertexArray(this->vao);
 }
 
-string TextureData::getRelPath(){
-    return RELATIVE_PATH_TO_MODELS + path;
+void ModelData::generate_object_buffer(){
+    GLuint loc1 = SH_LOCATION_VERTEX_POSITION;
+    GLuint loc2 = SH_LOCATION_VERTEX_NORMAL;
+    GLuint loc3 = SH_LOCATION_VERTEX_TEXTURE;
+    
+    // load in vertex positions
+    unsigned int vp_vbo = 0;
+    glGenBuffers (1, &vp_vbo);
+    glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
+    glBufferData (GL_ARRAY_BUFFER, this->g_point_count * 3 * sizeof (float), &(this->g_vp[0]), GL_STATIC_DRAW);
+    
+    // load in vertex normals
+    unsigned int vn_vbo = 0;
+    glGenBuffers (1, &vn_vbo);
+    glBindBuffer (GL_ARRAY_BUFFER, vn_vbo);
+    glBufferData (GL_ARRAY_BUFFER, this->g_point_count * 3 * sizeof (float), &(this->g_vn[0]), GL_STATIC_DRAW);
+    
+    //	This is for texture coordinates which you don't currently need, so I have commented it out
+    unsigned int vt_vbo = 0;
+    glGenBuffers (1, &vt_vbo);
+    glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
+    glBufferData (GL_ARRAY_BUFFER, this->g_point_count * 2 * sizeof (float), &this->g_vt[0], GL_STATIC_DRAW);
+    
+    glEnableVertexAttribArray (loc1);
+    glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
+    glVertexAttribPointer (loc1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    glEnableVertexAttribArray (loc2);
+    glBindBuffer (GL_ARRAY_BUFFER, vn_vbo);
+    glVertexAttribPointer (loc2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+    
+    //	This is for texture coordinates which you don't currently need, so I have commented it out
+    glEnableVertexAttribArray (loc3);
+    glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
+    glVertexAttribPointer (loc3, 2, GL_FLOAT, GL_FALSE, 0, NULL);
 }
 
-// loads in model from file
-bool load_model (ModelData *model) {
-    const aiScene* scene = aiImportFile (model->getPath().c_str(), aiProcess_Triangulate); // TRIANGLES!
-    fprintf (stderr, "Reading mesh %s\n", model->getPath().c_str());
+bool ModelData::load_model () {
+    const aiScene* scene = aiImportFile (this->getPath().c_str(), aiProcess_Triangulate); // TRIANGLES!
+    fprintf (stderr, "Reading mesh %s\n", this->getPath().c_str());
     if (!scene) {
-        fprintf (stderr, "ERROR: reading mesh %s\n", model->getPath().c_str());
+        fprintf (stderr, "ERROR: reading mesh %s\n", this->getPath().c_str());
         return false;
     }
     printf ("  %i animations\n", scene->mNumAnimations);
@@ -43,35 +89,35 @@ bool load_model (ModelData *model) {
     printf ("  %i meshes\n", scene->mNumMeshes);
     printf ("  %i textures\n", scene->mNumTextures);
     
-    model->num_meshes = scene->mNumMeshes;
-    model->meshes = new MeshData[model->num_meshes];
+    this->num_meshes = scene->mNumMeshes;
+    this->meshes = new MeshData[this->num_meshes];
     for (unsigned int m_i = 0; m_i < scene->mNumMeshes; m_i++) {
         const aiMesh* mesh = scene->mMeshes[m_i];
         //printf ("    %i vertices in mesh\n", mesh->mNumVertices);
-        model->meshes[m_i].vertex_start = model->g_point_count;
-        model->g_point_count += mesh->mNumVertices;
-        model->meshes[m_i].vertex_end = model->g_point_count;
-        model->meshes[m_i].texture_index = mesh->mMaterialIndex;
+        this->meshes[m_i].vertex_start = this->g_point_count;
+        this->g_point_count += mesh->mNumVertices;
+        this->meshes[m_i].vertex_end = this->g_point_count;
+        this->meshes[m_i].texture_index = mesh->mMaterialIndex;
         for (unsigned int v_i = 0; v_i < mesh->mNumVertices; v_i++) {
             if (mesh->HasPositions ()) {
                 const aiVector3D* vp = &(mesh->mVertices[v_i]);
                 //printf ("      vp %i (%f,%f,%f)\n", v_i, vp->x, vp->y, vp->z);
-                model->g_vp.push_back (vp->x);
-                model->g_vp.push_back (vp->y);
-                model->g_vp.push_back (vp->z);
+                this->g_vp.push_back (vp->x);
+                this->g_vp.push_back (vp->y);
+                this->g_vp.push_back (vp->z);
             }
             if (mesh->HasNormals ()) {
                 const aiVector3D* vn = &(mesh->mNormals[v_i]);
                 //printf ("      vn %i (%f,%f,%f)\n", v_i, vn->x, vn->y, vn->z);
-                model->g_vn.push_back (vn->x);
-                model->g_vn.push_back (vn->y);
-                model->g_vn.push_back (vn->z);
+                this->g_vn.push_back (vn->x);
+                this->g_vn.push_back (vn->y);
+                this->g_vn.push_back (vn->z);
             }
             if (mesh->HasTextureCoords (0)) {
                 const aiVector3D* vt = &(mesh->mTextureCoords[0][v_i]);
                 //printf ("      vt %i (%f,%f)\n", v_i, vt->x, vt->y);
-                model->g_vt.push_back (vt->x);
-                model->g_vt.push_back (vt->y);
+                this->g_vt.push_back (vt->x);
+                this->g_vt.push_back (vt->y);
             }
             if (mesh->HasTangentsAndBitangents ()) {
                 // NB: could store/print tangents here
@@ -79,26 +125,23 @@ bool load_model (ModelData *model) {
         }
     }
     
-    // if scene has materials then load each texture
+    // if scene has materials then load each texture/color
     if(scene->HasMaterials()){
-        // bind the mesh vao
-        glBindVertexArray(model->vao);
-        model->num_texs = scene->mNumMaterials;
-        model->textures = new TextureData[model->num_texs];
+        this->num_texs = scene->mNumMaterials;
+        this->textures = new TextureData[this->num_texs];
         for(int i = 0; i < scene->mNumMaterials; i++){
             if(scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) != 0){
                 aiString path;
                 scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-                model->textures[i].setPath(path);
-                string str = model->textures[i].path;
+                this->textures[i].setPath(path);
+                string str = this->textures[i].path;
+                load_texture(this->textures[i].getRelPath().c_str(), &this->textures[i].tex);
+                this->textures[i].texture = true;
                 //cout << "path to texture: " << str << endl;
-                //cout << "Texture #" << i << " " << (model->textures[i].texture == true ? "is":"is not") << " a texture image." << endl;
-                load_texture(model->textures[i].getRelPath().c_str(), &model->textures[i].tex);
-                model->textures[i].texture = true;
             }else{
-                model->textures[i].texture = false;
-                scene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE,model->textures[i].color);
-                //cout << "Texture #" << i << " R:" << model->textures[i].color.r << " G:" << model->textures[i].color.g << " B:" << model->textures[i].color.b << endl;
+                this->textures[i].texture = false;
+                scene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE,this->textures[i].color);
+                //cout << "Texture #" << i << " R:" << this->textures[i].color.r << " G:" << this->textures[i].color.g << " B:" << this->textures[i].color.b << endl;
             }
         }
     }
@@ -107,7 +150,7 @@ bool load_model (ModelData *model) {
     return true;
 }
 
-bool load_texture (const char* file_name, GLuint* tex) {
+bool ModelData::load_texture (const char* file_name, GLuint* tex) {
     int x, y, n;
     int force_channels = 4;
     unsigned char* image_data = stbi_load (file_name, &x, &y, &n, force_channels);
@@ -162,4 +205,20 @@ bool load_texture (const char* file_name, GLuint* tex) {
     // set the maximum!
     glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY_EXT, max_aniso);
     return true;
+}
+
+/**** MeshData ****/
+
+int MeshData::getVerts(){
+    return vertex_end - vertex_start;
+}
+
+/**** TextureData ****/
+
+void TextureData::setPath(aiString path){
+    this->path = path.C_Str();
+}
+
+string TextureData::getRelPath(){
+    return RELATIVE_PATH_TO_MODELS + path;
 }

@@ -15,6 +15,7 @@
 		63E940FC1C00CAE200E6B27F /* OpenGL.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63E940FB1C00CAE200E6B27F /* OpenGL.framework */; };
 		63E940FE1C00CAE800E6B27F /* GLUT.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 63E940FD1C00CAE800E6B27F /* GLUT.framework */; };
 		63E941001C00CC4500E6B27F /* libassimp.3.1.1.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = 63E940FF1C00CC4500E6B27F /* libassimp.3.1.1.dylib */; };
+		63F0CEC21C18960F00BCA5A2 /* game_object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63F0CEC01C18960F00BCA5A2 /* game_object.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -46,6 +47,8 @@
 		63E940FB1C00CAE200E6B27F /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		63E940FD1C00CAE800E6B27F /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		63E940FF1C00CC4500E6B27F /* libassimp.3.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.3.1.1.dylib; path = "opengl-game/lib/libassimp.3.1.1.dylib"; sourceTree = "<group>"; };
+		63F0CEC01C18960F00BCA5A2 /* game_object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = game_object.cpp; sourceTree = "<group>"; };
+		63F0CEC11C18960F00BCA5A2 /* game_object.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = game_object.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -96,6 +99,8 @@
 				633AE4181C00DAB9003063F1 /* model.hpp */,
 				6372D4DA1C11DD3300B16EE0 /* utilities.cpp */,
 				6372D4DB1C11DD3300B16EE0 /* utilities.hpp */,
+				63F0CEC01C18960F00BCA5A2 /* game_object.cpp */,
+				63F0CEC11C18960F00BCA5A2 /* game_object.hpp */,
 			);
 			path = "opengl-game";
 			sourceTree = "<group>";
@@ -156,6 +161,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				63F0CEC21C18960F00BCA5A2 /* game_object.cpp in Sources */,
 				6372D4DC1C11DD3300B16EE0 /* utilities.cpp in Sources */,
 				63E940EF1C00C9BF00E6B27F /* main.cpp in Sources */,
 				633AE4191C00DAB9003063F1 /* model.cpp in Sources */,

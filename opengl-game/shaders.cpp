@@ -8,7 +8,7 @@
 
 #include "shaders.hpp"
 
-char* readShaderSource(const char* shaderFile) {
+char* ShaderProgram::readShaderSource(const char* shaderFile) {
     FILE* fp = fopen(shaderFile, "rb"); //!->Why does binary flag "RB" work and not "R"... wierd msvc thing?
     
     if ( fp == NULL ) { return NULL; }
@@ -26,8 +26,35 @@ char* readShaderSource(const char* shaderFile) {
     return buf;
 }
 
-void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
-{
+ShaderProgram::ShaderProgram(SH_PROGRAM_TYPE type): ShaderProgram(){
+    this->Initialise();
+    switch(type){
+        case SH_COL_PROG:
+            this->AddShader(SH_COLOUR_VERTEX_SHADER, GL_VERTEX_SHADER);
+            this->AddShader(SH_COLOUR_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
+            break;
+        case SH_TEX_PROG:
+            this->AddShader(SH_TEXTURE_VERTEX_SHADER, GL_VERTEX_SHADER);
+            this->AddShader(SH_TEXTURE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
+            break;
+    }
+    this->Compile();
+}
+
+ShaderProgram::ShaderProgram(){}
+
+void ShaderProgram::Initialise(){
+    //Start the process of setting up our shaders by creating a program ID
+    //Note: we will link all the shaders together into this ID
+    GLuint shaderProgramID = glCreateProgram();
+    if (shaderProgramID == 0) {
+        fprintf(stderr, "Error creating shader program\n");
+        exit(1);
+    }
+    this->programID = shaderProgramID;
+}
+
+void ShaderProgram::AddShader(const char* pShaderText, GLenum ShaderType){
     // create a shader object
     GLuint ShaderObj = glCreateShader(ShaderType);
     
@@ -51,45 +78,32 @@ void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType)
         exit(1);
     }
     // Attach the compiled shader object to the program object
-    glAttachShader(ShaderProgram, ShaderObj);
+    glAttachShader(this->programID, ShaderObj);
 }
 
-GLuint CreateShaderProgram(){
-    //Start the process of setting up our shaders by creating a program ID
-    //Note: we will link all the shaders together into this ID
-    GLuint shaderProgramID = glCreateProgram();
-    if (shaderProgramID == 0) {
-        fprintf(stderr, "Error creating shader program\n");
-        exit(1);
-    }
-    return shaderProgramID;
-}
-
-GLuint CompileShaders(GLuint shaderProgramID)
-{
+void ShaderProgram::Compile(){
     GLint Success = 0;
     GLchar ErrorLog[1024] = { 0 };
     // After compiling all shader objects and attaching them to the program, we can finally link it
-    glLinkProgram(shaderProgramID);
+    glLinkProgram(this->programID);
     // check for program related errors using glGetProgramiv
-    glGetProgramiv(shaderProgramID, GL_LINK_STATUS, &Success);
+    glGetProgramiv(this->programID, GL_LINK_STATUS, &Success);
     if (Success == 0) {
-        glGetProgramInfoLog(shaderProgramID, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(this->programID, sizeof(ErrorLog), NULL, ErrorLog);
         fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
         exit(1);
     }
     
     // program has been successfully linked but needs to be validated to check whether the program can execute given the current pipeline state
-    glValidateProgram(shaderProgramID);
+    glValidateProgram(this->programID);
     // check for program related errors using glGetProgramiv
-    glGetProgramiv(shaderProgramID, GL_VALIDATE_STATUS, &Success);
+    glGetProgramiv(this->programID, GL_VALIDATE_STATUS, &Success);
     if (!Success) {
-        glGetProgramInfoLog(shaderProgramID, sizeof(ErrorLog), NULL, ErrorLog);
+        glGetProgramInfoLog(this->programID, sizeof(ErrorLog), NULL, ErrorLog);
         fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
         exit(1);
     }
     // Finally, use the linked shader program
     // Note: this program will stay in effect for all draw calls until you replace it with another or explicitly disable its use
-    glUseProgram(shaderProgramID);
-    return shaderProgramID;
+    glUseProgram(this->programID);
 }

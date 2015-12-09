@@ -4,8 +4,9 @@
 #include <math.h>
 #include "maths_funcs.h"
 #include "shaders.hpp"
-#include "model.hpp"
 #include "utilities.hpp"
+#include "model.hpp"
+#include "game_object.hpp"
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
@@ -14,7 +15,6 @@ using namespace std;
 
 int number_of_models = NUMBER_MODELS;
 string *model_filenames = new string[number_of_models]{VEHICLE_MODEL, STREET_MODEL};
-ModelData *models = new ModelData[number_of_models];
 
 int width = 800;
 int height = 800;
@@ -22,65 +22,8 @@ int height = 800;
 CameraTransform camera_transform;
 ModelTransform vehicle_transform;
 
-GLuint colourProgramID;
-GLuint textureProgramID;
-
-// VBO Functions - click on + to expand
-#pragma region VBO_FUNCTIONS
-
-void generateObjectBufferMesh(ModelData *model) {
-    /*----------------------------------------------------------------------------
-     LOAD model HERE AND COPY INTO BUFFERS
-     ----------------------------------------------------------------------------*/
-    
-    //Note: you may get an error "vector subscript out of range" if you are using this code for a model that doesnt have positions and normals
-    //Might be an idea to do a check for that before generating and binding the buffer.
-    
-    // bind the vertex array object
-    glBindVertexArray(model->vao);
-    
-    load_model (model);
-    
-    //textureProgram
-    glUseProgram(textureProgramID);
-    
-    GLuint loc1 = LOCATION_VERTEX_POSITION;
-    GLuint loc2 = LOCATION_VERTEX_NORMAL;
-    GLuint loc3 = LOCATION_VERTEX_TEXTURE;
-    
-    // load in vertex positions
-    unsigned int vp_vbo = 0;
-    glGenBuffers (1, &vp_vbo);
-    glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
-    glBufferData (GL_ARRAY_BUFFER, model->g_point_count * 3 * sizeof (float), &(model->g_vp[0]), GL_STATIC_DRAW);
-    
-    // load in vertex normals
-    unsigned int vn_vbo = 0;
-    glGenBuffers (1, &vn_vbo);
-    glBindBuffer (GL_ARRAY_BUFFER, vn_vbo);
-    glBufferData (GL_ARRAY_BUFFER, model->g_point_count * 3 * sizeof (float), &(model->g_vn[0]), GL_STATIC_DRAW);
-    
-    //	This is for texture coordinates which you don't currently need, so I have commented it out
-    unsigned int vt_vbo = 0;
-    glGenBuffers (1, &vt_vbo);
-    glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
-    glBufferData (GL_ARRAY_BUFFER, model->g_point_count * 2 * sizeof (float), &model->g_vt[0], GL_STATIC_DRAW);
-    
-    glEnableVertexAttribArray (loc1);
-    glBindBuffer (GL_ARRAY_BUFFER, vp_vbo);
-    glVertexAttribPointer (loc1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    glEnableVertexAttribArray (loc2);
-    glBindBuffer (GL_ARRAY_BUFFER, vn_vbo);
-    glVertexAttribPointer (loc2, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-    
-    //	This is for texture coordinates which you don't currently need, so I have commented it out
-    glEnableVertexAttribArray (loc3);
-    glBindBuffer (GL_ARRAY_BUFFER, vt_vbo);
-    glVertexAttribPointer (loc3, 2, GL_FLOAT, GL_FALSE, 0, NULL);
-}
-
-
-#pragma endregion VBO_FUNCTIONS
+ShaderProgram programs[SH_NUM_PROGRAM_TYPES];
+vector<GameObject> gameObjects(NUMBER_MODELS);
 
 void display(){
     
@@ -89,86 +32,30 @@ void display(){
     glDepthFunc (GL_LESS); // depth-testing interprets a smaller value as "closer"
     glClearColor (0.5f, 0.5f, 0.5f, 1.0f);
     glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glUseProgram (textureProgramID);
     
-    
-    //Declare your uniform variables that will be used in your shader
-    int matrix_location = glGetUniformLocation (textureProgramID, "model");
-    int view_mat_location = glGetUniformLocation (textureProgramID, "view");
-    int proj_mat_location = glGetUniformLocation (textureProgramID, "proj");
-    
-    
-    // Root of the Hierarchy
-    mat4 view = identity_mat4 ();
-    view = look_at(camera_transform.eye, camera_transform.look(), vec3(0.0, 1.0, 0.0));
-    mat4 persp_proj = perspective(90.0, (float)width/(float)height, 0.1, 10000.0);
-    mat4 model = identity_mat4 ();
-    model = scale(model, vec3(6.0, 6.0, 6.0));
-    
-    // update uniforms & draw
-    glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, persp_proj.m);
-    glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view.m);
-    glUniformMatrix4fv (matrix_location, 1, GL_FALSE, model.m);
-    
-    // draw street
-    glBindVertexArray(models[1].vao);
-    for(int i = 0; i < models[1].num_meshes; i++){
-        //cout << "Mesh #" << i << " material index " << models[1].meshes[i].texture_index << endl;
-        if(models[1].textures[models[1].meshes[i].texture_index].texture){
-            glUseProgram (textureProgramID);
-            glEnableVertexAttribArray(LOCATION_VERTEX_POSITION);
-            glEnableVertexAttribArray(LOCATION_VERTEX_NORMAL);
-            glEnableVertexAttribArray(LOCATION_VERTEX_TEXTURE);
-            glBindTexture(GL_TEXTURE_2D, models[1].textures[models[1].meshes[i].texture_index].tex);
-            glDrawArrays(GL_TRIANGLES, models[1].meshes[i].vertex_start, models[1].meshes[i].getVerts());
-            glDisableVertexAttribArray(LOCATION_VERTEX_POSITION);
-            glDisableVertexAttribArray(LOCATION_VERTEX_NORMAL);
-            glDisableVertexAttribArray(LOCATION_VERTEX_TEXTURE);
-        }else{
-            glUseProgram(colourProgramID);
-            glBindVertexArray(models[1].vao);
-            glEnableVertexAttribArray(LOCATION_VERTEX_POSITION);
-            glEnableVertexAttribArray(LOCATION_VERTEX_NORMAL);
-            
-            int color_location = glGetUniformLocation (colourProgramID, "color");
-            aiColor3D color = models[1].textures[models[1].meshes[i].texture_index].color;
-            float color_vec[3] = {color.r, color.g, color.b};
-            
-            matrix_location = glGetUniformLocation (colourProgramID, "model");
-            view_mat_location = glGetUniformLocation (colourProgramID, "view");
-            proj_mat_location = glGetUniformLocation (colourProgramID, "proj");
-            
-            glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, persp_proj.m);
-            glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view.m);
-            glUniformMatrix4fv (matrix_location, 1, GL_FALSE, model.m);
-            
-            glUniform3fv(color_location, 1, color_vec);
-            //cout << "Mesh #" << i << " Using color R:" << color.r << " G:" << color.g << " B:" << color.b << endl;
-            
-            glDrawArrays(GL_TRIANGLES, models[1].meshes[i].vertex_start, models[1].meshes[i].getVerts());
-            
-            glDisableVertexAttribArray(LOCATION_VERTEX_POSITION);
-            glDisableVertexAttribArray(LOCATION_VERTEX_NORMAL);
-        }
+    for(int i = 0; i < SH_NUM_PROGRAM_TYPES; i++){
+        glUseProgram(programs[i].programID);
+        
+        //Declare your uniform variables that will be used in your shaders
+        int view_mat_location = glGetUniformLocation (programs[i].programID, SH_UNIFORM_VIEW);
+        int proj_mat_location = glGetUniformLocation (programs[i].programID, SH_UNIFORM_PERSPECTIVE);
+        
+        // values of matrices
+        mat4 view = identity_mat4();
+        view = look_at(camera_transform.eye, camera_transform.look(), vec3(0.0, 1.0, 0.0));
+        mat4 persp_proj = perspective(90.0, (float)width/(float)height, 0.1, 10000.0);
+        
+        // update uniforms & draw
+        glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, persp_proj.m);
+        glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view.m);
     }
     
-    // rotate and translate vehicle
-    model = identity_mat4 ();
-    rotate_mat4(&model, vehicle_transform.rotation);
-    model = translate(model, vehicle_transform.translation);
-    model = scale(model, vehicle_transform.scale);
-    
-    //update model matrix on gpu
-    glUniformMatrix4fv (matrix_location, 1, GL_FALSE, model.m);
-    
-    // draw vehicle
-    glBindVertexArray(models[0].vao);
-    glDrawArrays (GL_TRIANGLES, 0, models[0].g_point_count);
-    
+    for(int i = 0; i < NUMBER_MODELS; i++){
+        gameObjects[i].draw_model(programs);
+    }
     
     glutSwapBuffers();
 }
-
 
 void updateScene() {
     
@@ -186,49 +73,30 @@ void updateScene() {
     glutPostRedisplay();
 }
 
-void setupVAOs(){
-    for(int i = 0; i < number_of_models; i++){
-        // create vao for model
-        models[i].vao = 0;
-        glGenVertexArrays(1, &models[i].vao);
-        glBindVertexArray(models[i].vao);
-    }
-}
-
-void loadModels(){
-    for(int i = 0; i < number_of_models; i++){
-        models[i].file_name = model_filenames[i];
-        generateObjectBufferMesh(&models[i]);
-        // load textures
-    }
-}
-
 void initialise_transforms(){
     camera_transform.eye = vec3(0.0, 10.0, 0.0);
-    vehicle_transform.scale = vec3(0.8, 0.8, 0.8);
-    vehicle_transform.rotation = vec3(-90.0, 0.0, 0.0);
-    vehicle_transform.translation = vec3(-90.0, 0.0, 180.0);
+    gameObjects[1].modelTransform.scale = vec3(6.0, 6.0, 6.0);
+    gameObjects[0].modelTransform.scale = vec3(0.8, 0.8, 0.8);
+    gameObjects[0].modelTransform.rotation = vec3(-90.0, 0.0, 0.0);
+    gameObjects[0].modelTransform.translation = vec3(-90.0, 0.0, 180.0);
 }
 
 void init()
 {
-    // set up vaos
-    setupVAOs();
-    // intialise transformations
+    // setup vaos
+    for(int i = 0; i < NUMBER_MODELS; i++){
+        gameObjects[i].setup_vao();
+    }
+    
+    for(int i = 0; i < SH_NUM_PROGRAM_TYPES; i++){
+        programs[i] = *new ShaderProgram(static_cast<SH_PROGRAM_TYPE>(i));
+    }
+    
+    for(int i = 0; i < NUMBER_MODELS; i++){
+        gameObjects[i].load_model(model_filenames[i]);
+    }
+    
     initialise_transforms();
-    // Set up the shaders
-    // Program with the texture version of fragment shader
-    textureProgramID = CreateShaderProgram();
-    AddShader(textureProgramID, TEXTURE_VERTEX_SHADER, GL_VERTEX_SHADER);
-    AddShader(textureProgramID, TEXTURE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
-    textureProgramID = CompileShaders(textureProgramID);
-    // program with standard colour fragment shader
-    colourProgramID = CreateShaderProgram();
-    AddShader(colourProgramID, COLOUR_VERTEX_SHADER, GL_VERTEX_SHADER);
-    AddShader(colourProgramID, COLOUR_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
-    colourProgramID = CompileShaders(colourProgramID);
-    // load mesh into a vertex buffer array
-    loadModels();
 }
 
 // Placeholder code for the keypress

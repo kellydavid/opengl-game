@@ -9,30 +9,45 @@
 #ifndef shaders_hpp
 #define shaders_hpp
 
+#include <iostream>
 #include <stdio.h>
 #include <OpenGl/gl3.h>
 #include <stdlib.h>
+#include <vector>
 
 /* -----------------------
  SHADER FILEPATHS
  --------------------------*/
-#define COLOUR_VERTEX_SHADER "../../opengl-game/Shaders/colourVertexShader.glsl"
-#define COLOUR_FRAGMENT_SHADER "../../opengl-game/Shaders/colourFragmentShader.glsl"
-#define TEXTURE_VERTEX_SHADER "../../opengl-game/Shaders/textureVertexShader.glsl"
-#define TEXTURE_FRAGMENT_SHADER "../../opengl-game/Shaders/textureFragmentShader.glsl"
+#define SH_COLOUR_VERTEX_SHADER "../../opengl-game/Shaders/colourVertexShader.glsl"
+#define SH_COLOUR_FRAGMENT_SHADER "../../opengl-game/Shaders/colourFragmentShader.glsl"
+#define SH_TEXTURE_VERTEX_SHADER "../../opengl-game/Shaders/textureVertexShader.glsl"
+#define SH_TEXTURE_FRAGMENT_SHADER "../../opengl-game/Shaders/textureFragmentShader.glsl"
 
-#define LOCATION_VERTEX_POSITION 0
-#define LOCATION_VERTEX_NORMAL 1
-#define LOCATION_VERTEX_TEXTURE 2
+#define SH_LOCATION_VERTEX_POSITION 0
+#define SH_LOCATION_VERTEX_NORMAL 1
+#define SH_LOCATION_VERTEX_TEXTURE 2
 
+#define SH_UNIFORM_MODEL "model"
+#define SH_UNIFORM_VIEW "view"
+#define SH_UNIFORM_PERSPECTIVE "proj"
+#define SH_UNIFORM_COLOR "color"
 
-// Create a NULL-terminated string by reading the provided file
-char* readShaderSource(const char* shaderFile);
+#define SH_NUM_PROGRAM_TYPES 2
+enum SH_PROGRAM_TYPE{SH_COL_PROG, SH_TEX_PROG};
 
-void AddShader(GLuint ShaderProgram, const char* pShaderText, GLenum ShaderType);
-
-GLuint CreateShaderProgram();
-
-GLuint CompileShaders(GLuint shaderProgramID);
+class ShaderProgram{
+private:
+    // Create a NULL-terminated string by reading the provided file
+    char* readShaderSource(const char* shaderFile);
+public:
+    SH_PROGRAM_TYPE type;
+    GLuint programID;
+    
+    ShaderProgram();
+    ShaderProgram(SH_PROGRAM_TYPE type);
+    void Initialise();
+    void AddShader(const char* pShaderText, GLenum ShaderType);
+    void Compile();
+};
 
 #endif /* shaders_hpp */

@@ -33,20 +33,44 @@ class TextureData;
 class MeshData;
 
 class ModelData{
-public:
+private:
     string file_name; // path to file where model is stored
+    
+    // loads in model from file
+    bool load_model();
+    
+    bool load_texture (const char* file_name, GLuint* tex);
+    
+    void generate_object_buffer();
+    
+public:
     unsigned int vao; // points to the vao associated with the model
+    // coordinates
     vector<float> g_vp, g_vn, g_vt, g_vc; // vertex positions, vertex normals, vertex textures (coordinates)
     int g_point_count = 0; // total count of points
     int g_vt_point_count = 0;
-    int g_vc_point_count = 0;
+    // textures
     int num_texs = 0; // length of texture pointer array
     TextureData *textures;
+    // meshes
     int num_meshes = 0; // number of meshes
     MeshData *meshes;
     
+    // default constructor
+    ModelData();
+    
+    // reads the model, binds the vao and loads the meshes into vbo
+    // also loads textures
+    void load_data(string filename);
+    
+    // initialises the vao
+    void setup_vao();
+    
     // get full relative path to model
     string getPath();
+    
+    // set the name of the file for the model
+    void set_filename(string file_name);
 };
 
 class TextureData{
@@ -70,10 +94,5 @@ public:
     // returns number of vertices that the texture is assigned to
     int getVerts();
 };
-
-bool load_model (ModelData *model);
-
-bool load_texture (const char* file_name, GLuint* tex);
-
 
 #endif /* model_hpp */
