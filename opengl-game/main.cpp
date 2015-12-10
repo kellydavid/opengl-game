@@ -6,15 +6,11 @@
 #include "shaders.hpp"
 #include "transform.hpp"
 #include "model.hpp"
-#include "game_object.hpp"
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 using namespace std;
-
-int number_of_models = NUMBER_MODELS;
-string *model_filenames = new string[number_of_models]{VEHICLE_MODEL, STREET_MODEL};
 
 int width = 800;
 int height = 800;
@@ -23,7 +19,9 @@ CameraTransform camera_transform;
 ModelTransform vehicle_transform;
 
 ShaderProgram programs[SH_NUM_PROGRAM_TYPES];
-vector<GameObject> gameObjects(NUMBER_MODELS);
+
+string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL};
+vector<Model> models(NUMBER_MODELS);
 
 void display(){
     
@@ -51,7 +49,7 @@ void display(){
     }
     
     for(int i = 0; i < NUMBER_MODELS; i++){
-        gameObjects[i].draw_model(programs);
+        models[i].draw_model(programs);
     }
     
     glutSwapBuffers();
@@ -75,17 +73,17 @@ void updateScene() {
 
 void initialise_transforms(){
     camera_transform.eye = vec3(0.0, 10.0, 0.0);
-    gameObjects[1].modelTransform.scale = vec3(6.0, 6.0, 6.0);
-    gameObjects[0].modelTransform.scale = vec3(0.8, 0.8, 0.8);
-    gameObjects[0].modelTransform.rotation = vec3(-90.0, 0.0, 0.0);
-    gameObjects[0].modelTransform.translation = vec3(-90.0, 0.0, 180.0);
+    models[1].modelTransform.scale = vec3(6.0, 6.0, 6.0);
+    models[0].modelTransform.scale = vec3(0.8, 0.8, 0.8);
+    models[0].modelTransform.rotation = vec3(-90.0, 0.0, 0.0);
+    models[0].modelTransform.translation = vec3(-90.0, 0.0, 180.0);
 }
 
 void init()
 {
     // setup vaos
     for(int i = 0; i < NUMBER_MODELS; i++){
-        gameObjects[i].setup_vao();
+        models[i].setup_vao();
     }
     
     for(int i = 0; i < SH_NUM_PROGRAM_TYPES; i++){
@@ -93,7 +91,7 @@ void init()
     }
     
     for(int i = 0; i < NUMBER_MODELS; i++){
-        gameObjects[i].load_model(model_filenames[i]);
+        models[i].load_model(model_filenames[i]);
     }
     
     initialise_transforms();

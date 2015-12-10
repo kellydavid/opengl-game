@@ -7,11 +7,65 @@
 //
 
 #include "model.hpp"
-#include "shaders.hpp"
+#include <assimp/cimport.h> // C importer
+#include <assimp/scene.h> // collects data
+#include <assimp/postprocess.h> // various extra operations
+#include <vector>
+#include <string>
 
 // STB image loading header
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
+
+using namespace std;
+
+/**** Model ****/
+Model::Model(){}
+
+void Model::load_model(string path_to_model){
+    this->modelData.load_data(path_to_model);
+}
+
+void Model::draw_model(ShaderProgram *shaderPrograms/*, mat4 view, mat4 persp*/){
+    // setup the shaders
+    for(int i = 0; i < SH_NUM_PROGRAM_TYPES; i++){
+        glUseProgram(shaderPrograms[i].programID);
+        glBindVertexArray(this->modelData.vao);
+        upload_model_transform(shaderPrograms[i]);
+    }
+    
+    // draw each mesh using appropriate shader
+    for(int i = 0; i < this->modelData.num_meshes; i++){
+        MeshData mesh = modelData.meshes[i];
+        if(this->modelData.textures[mesh.texture_index].texture){
+            glUseProgram(shaderPrograms[SH_TEX_PROG].programID);
+            glBindTexture(GL_TEXTURE_2D, this->modelData.textures[mesh.texture_index].tex);
+        }
+        else{
+            glUseProgram(shaderPrograms[SH_COL_PROG].programID);
+            int color_location = glGetUniformLocation(shaderPrograms[SH_COL_PROG].programID, SH_UNIFORM_COLOR);
+            vec3 color = this->modelData.textures[mesh.texture_index].color;
+            float color_vec[3] = {color.v[0], color.v[1], color.v[2]};
+            glUniform3fv(color_location, 1, color_vec);
+        }
+        glDrawArrays(GL_TRIANGLES, mesh.vertex_start, mesh.getVerts());
+    }
+}
+
+void Model::setup_vao(){
+    modelData.setup_vao();
+}
+
+void Model::upload_model_transform(ShaderProgram program){
+    // rotate and translate vehicle
+    mat4 model = identity_mat4 ();
+    rotate_mat4(&model, this->modelTransform.rotation);
+    model = translate(model, this->modelTransform.translation);
+    model = scale(model, this->modelTransform.scale);
+    //update model matrix on gpu
+    int loc_model = glGetUniformLocation(program.programID, SH_UNIFORM_MODEL);
+    glUniformMatrix4fv (loc_model, 1, GL_FALSE, model.m);
+}
 
 /**** ModelData ****/
 
@@ -133,15 +187,19 @@ bool ModelData::load_model () {
             if(scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) != 0){
                 aiString path;
                 scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-                this->textures[i].setPath(path);
+                this->textures[i].setPath(path.C_Str());
                 string str = this->textures[i].path;
                 load_texture(this->textures[i].getRelPath().c_str(), &this->textures[i].tex);
                 this->textures[i].texture = true;
                 //cout << "path to texture: " << str << endl;
             }else{
                 this->textures[i].texture = false;
-                scene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE,this->textures[i].color);
-                //cout << "Texture #" << i << " R:" << this->textures[i].color.r << " G:" << this->textures[i].color.g << " B:" << this->textures[i].color.b << endl;
+                aiColor3D color;
+                scene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+                this->textures[i].color.v[0] = color.r;
+                this->textures[i].color.v[1] = color.g;
+                this->textures[i].color.v[2] = color.b;
+                cout << "Texture #" << i << " R:" << this->textures[i].color.v[0] << " G:" << this->textures[i].color.v[1] << " B:" << this->textures[i].color.v[2] << endl;
             }
         }
     }
@@ -215,8 +273,8 @@ int MeshData::getVerts(){
 
 /**** TextureData ****/
 
-void TextureData::setPath(aiString path){
-    this->path = path.C_Str();
+void TextureData::setPath(string path){
+    this->path = path;
 }
 
 string TextureData::getRelPath(){
