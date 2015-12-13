@@ -16,12 +16,22 @@
 #include "shaders.hpp"
 #include "transform.hpp"
 
+#define NUMBER_SKYBOX_IMAGES 6
+#define SKYBOX_GRAY_SKY_POSX "../../opengl-game/CubeMap/graycloud_rt.jpg"
+#define SKYBOX_GRAY_SKY_NEGX "../../opengl-game/CubeMap/graycloud_lf.jpg"
+#define SKYBOX_GRAY_SKY_POSY "../../opengl-game/CubeMap/graycloud_up.jpg"
+#define SKYBOX_GRAY_SKY_NEGY "../../opengl-game/CubeMap/graycloud_dn.jpg"
+#define SKYBOX_GRAY_SKY_POSZ "../../opengl-game/CubeMap/graycloud_bk.jpg"
+#define SKYBOX_GRAY_SKY_NEGZ "../../opengl-game/CubeMap/graycloud_ft.jpg"
+
 #define RELATIVE_PATH_TO_MODELS "../../opengl-game/Models/"
-#define NUMBER_MODELS 2
+#define NUMBER_MODELS 3
 #define VEHICLE_MODEL "vehicle.dae"
 #define STREET_MODEL "street2.obj"
+#define SKYBOX_MODEL "cube.obj"
 #define VEHICLE_INDEX 0
 #define STREET_INDEX 1
+#define SKYBOX_INDEX 2
 
 
 class Model;
@@ -36,11 +46,13 @@ private:
     // loads in model from file
     bool load_model();
     
+    bool load_skybox_texture(const char * file_path, GLuint target);
+    
     bool load_texture (const char* file_name, GLuint* tex);
     
     void generate_object_buffer();
-    
 public:
+    bool skybox = false;
     unsigned int vao; // points to the vao associated with the model
     // coordinates
     std::vector<float> g_vp, g_vn, g_vt, g_vc; // vertex positions, vertex normals, vertex textures (coordinates)
@@ -59,6 +71,9 @@ public:
     // reads the model, binds the vao and loads the meshes into vbo
     // also loads textures
     void load_data(std::string filename);
+    
+    // loads vertices for skybox and textures
+    bool load_skybox_model();
     
     // initialises the vao
     void setup_vao();
@@ -107,6 +122,10 @@ public:
     void load_model(std::string path_to_model);
     
     void draw_model(ShaderProgram *shaderPrograms);
+    
+    void set_skybox(bool skybox);
+    
+    bool is_skybox();
 };
 
 #endif /* model_hpp */

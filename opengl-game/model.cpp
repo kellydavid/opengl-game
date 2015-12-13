@@ -19,6 +19,12 @@
 
 using namespace std;
 
+string skybox_images[NUMBER_SKYBOX_IMAGES] = {
+    SKYBOX_GRAY_SKY_POSX, SKYBOX_GRAY_SKY_NEGX,
+    SKYBOX_GRAY_SKY_POSY, SKYBOX_GRAY_SKY_NEGY,
+    SKYBOX_GRAY_SKY_POSZ, SKYBOX_GRAY_SKY_NEGZ
+};
+
 /**** Model ****/
 Model::Model(){}
 
@@ -37,7 +43,13 @@ void Model::draw_model(ShaderProgram *shaderPrograms/*, mat4 view, mat4 persp*/)
     // draw each mesh using appropriate shader
     for(int i = 0; i < this->modelData.num_meshes; i++){
         MeshData mesh = modelData.meshes[i];
-        if(this->modelData.textures[mesh.texture_index].texture){
+        if(this->is_skybox()){
+            glUseProgram(shaderPrograms[SH_SKYBOX_PROG].programID);
+            glDepthMask(false);
+            glBindTexture(GL_TEXTURE_CUBE_MAP, this->modelData.textures[mesh.texture_index].tex);
+            glDepthMask(true);
+        }
+        else if(this->modelData.textures[mesh.texture_index].texture){
             glUseProgram(shaderPrograms[SH_TEX_PROG].programID);
             glBindTexture(GL_TEXTURE_2D, this->modelData.textures[mesh.texture_index].tex);
         }
@@ -65,6 +77,14 @@ void Model::upload_model_transform(ShaderProgram program){
     //update model matrix on gpu
     int loc_model = glGetUniformLocation(program.programID, SH_UNIFORM_MODEL);
     glUniformMatrix4fv (loc_model, 1, GL_FALSE, model.m);
+}
+
+void Model::set_skybox(bool skybox){
+    this->modelData.skybox = skybox;
+}
+
+bool Model::is_skybox(){
+    return this->modelData.skybox;
 }
 
 /**** ModelData ****/
@@ -179,32 +199,114 @@ bool ModelData::load_model () {
         }
     }
     
-    // if scene has materials then load each texture/color
-    if(scene->HasMaterials()){
-        this->num_texs = scene->mNumMaterials;
-        this->textures = new TextureData[this->num_texs];
-        for(int i = 0; i < scene->mNumMaterials; i++){
-            if(scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) != 0){
-                aiString path;
-                scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
-                this->textures[i].setPath(path.C_Str());
-                string str = this->textures[i].path;
-                load_texture(this->textures[i].getRelPath().c_str(), &this->textures[i].tex);
-                this->textures[i].texture = true;
-                //cout << "path to texture: " << str << endl;
-            }else{
-                this->textures[i].texture = false;
-                aiColor3D color;
-                scene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE, color);
-                this->textures[i].color.v[0] = color.r;
-                this->textures[i].color.v[1] = color.g;
-                this->textures[i].color.v[2] = color.b;
-                cout << "Texture #" << i << " R:" << this->textures[i].color.v[0] << " G:" << this->textures[i].color.v[1] << " B:" << this->textures[i].color.v[2] << endl;
+    if(!this->skybox){
+        // if scene has materials then load each texture/color
+        if(scene->HasMaterials()){
+            this->num_texs = scene->mNumMaterials;
+            this->textures = new TextureData[this->num_texs];
+            for(int i = 0; i < scene->mNumMaterials; i++){
+                if(scene->mMaterials[i]->GetTextureCount(aiTextureType_DIFFUSE) != 0){
+                    aiString path;
+                    scene->mMaterials[i]->GetTexture(aiTextureType_DIFFUSE, 0, &path);
+                    this->textures[i].setPath(path.C_Str());
+                    string str = this->textures[i].path;
+                    load_texture(this->textures[i].getRelPath().c_str(), &this->textures[i].tex);
+                    this->textures[i].texture = true;
+                    //cout << "path to texture: " << str << endl;
+                }else{
+                    this->textures[i].texture = false;
+                    aiColor3D color;
+                    scene->mMaterials[i]->Get(AI_MATKEY_COLOR_DIFFUSE, color);
+                    this->textures[i].color.v[0] = color.r;
+                    this->textures[i].color.v[1] = color.g;
+                    this->textures[i].color.v[2] = color.b;
+                    cout << "Texture #" << i << " R:" << this->textures[i].color.v[0] << " G:" << this->textures[i].color.v[1] << " B:" << this->textures[i].color.v[2] << endl;
+                }
             }
         }
+    }else{
+        for(int i = 0; i < this->num_meshes; i++)
+            this->meshes[i].texture_index = 0;
+        this->num_texs = 1;
+        this->textures = new TextureData[this->num_texs];
+        this->textures[0].texture = true;
+        
+        glActiveTexture(GL_TEXTURE0);
+        
+        glGenTextures(1, &this->textures[0].tex);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, this->textures[0].tex);
+        
+        GLuint targets[] = {
+            GL_TEXTURE_CUBE_MAP_POSITIVE_X,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
+            GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
+            GL_TEXTURE_CUBE_MAP_NEGATIVE_Z
+        };
+        
+        // load all the images
+        for(int i = 0; i < NUMBER_SKYBOX_IMAGES; i++){
+            load_skybox_texture(skybox_images[i].c_str(), targets[i]);
+        }
+        
+        // cube map settings
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
     }
     
     aiReleaseImport (scene);
+    return true;
+}
+
+bool ModelData::load_skybox_texture(const char * file_path, GLuint target){
+    int x, y, n;
+    int force_channels = 4;
+    unsigned char* image_data = stbi_load (file_path, &x, &y, &n, force_channels);
+    if (!image_data) {
+        fprintf (stderr, "ERROR: could not load %s\n", file_path);
+        return false;
+    }
+    // NPOT check
+    if ((x & (x - 1)) != 0 || (y & (y - 1)) != 0) {
+        fprintf (
+                 stderr, "WARNING: texture %s is not power-of-2 dimensions\n", file_path
+                 );
+    }
+    int width_in_bytes = x * 4;
+    unsigned char *top = NULL;
+    unsigned char *bottom = NULL;
+    unsigned char temp = 0;
+    int half_height = y / 2;
+    
+    for (int row = 0; row < half_height; row++) {
+        top = image_data + row * width_in_bytes;
+        bottom = image_data + (y - row - 1) * width_in_bytes;
+        for (int col = 0; col < width_in_bytes; col++) {
+            temp = *top;
+            *top = *bottom;
+            *bottom = temp;
+            top++;
+            bottom++;
+        }
+    }
+    // copy image data into 'target' side of cube map
+    glTexImage2D (
+                  target,
+                  0,
+                  GL_RGBA,
+                  x,
+                  y,
+                  0,
+                  GL_RGBA,
+                  GL_UNSIGNED_BYTE,
+                  image_data
+                  );
+    free (image_data);
+    return true;
     return true;
 }
 
@@ -280,3 +382,5 @@ void TextureData::setPath(string path){
 string TextureData::getRelPath(){
     return RELATIVE_PATH_TO_MODELS + path;
 }
+
+#undef STB_IMAGE_IMPLEMENTATION

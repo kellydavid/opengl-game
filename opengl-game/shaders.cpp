@@ -37,6 +37,10 @@ ShaderProgram::ShaderProgram(SH_PROGRAM_TYPE type): ShaderProgram(){
             this->AddShader(SH_TEXTURE_VERTEX_SHADER, GL_VERTEX_SHADER);
             this->AddShader(SH_TEXTURE_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
             break;
+        case SH_SKYBOX_PROG:
+            this->AddShader(SH_SKYBOX_VERTEX_SHADER, GL_VERTEX_SHADER);
+            this->AddShader(SH_SKYBOX_FRAGMENT_SHADER, GL_FRAGMENT_SHADER);
+            break;
     }
     this->Compile();
 }

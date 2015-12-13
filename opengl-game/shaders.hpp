@@ -22,6 +22,8 @@
 #define SH_COLOUR_FRAGMENT_SHADER "../../opengl-game/Shaders/colourFragmentShader.glsl"
 #define SH_TEXTURE_VERTEX_SHADER "../../opengl-game/Shaders/textureVertexShader.glsl"
 #define SH_TEXTURE_FRAGMENT_SHADER "../../opengl-game/Shaders/textureFragmentShader.glsl"
+#define SH_SKYBOX_VERTEX_SHADER "../../opengl-game/Shaders/skyboxVertexShader.glsl"
+#define SH_SKYBOX_FRAGMENT_SHADER "../../opengl-game/Shaders/skyboxFragmentShader.glsl"
 
 #define SH_LOCATION_VERTEX_POSITION 0
 #define SH_LOCATION_VERTEX_NORMAL 1
@@ -31,9 +33,10 @@
 #define SH_UNIFORM_VIEW "view"
 #define SH_UNIFORM_PERSPECTIVE "proj"
 #define SH_UNIFORM_COLOR "color"
+#define SH_UNIFORM_DRAW_SKYBOX "draw_skybox"
 
-#define SH_NUM_PROGRAM_TYPES 2
-enum SH_PROGRAM_TYPE{SH_COL_PROG, SH_TEX_PROG};
+#define SH_NUM_PROGRAM_TYPES 3
+enum SH_PROGRAM_TYPE{SH_COL_PROG, SH_TEX_PROG, SH_SKYBOX_PROG};
 
 class ShaderProgram{
 private:

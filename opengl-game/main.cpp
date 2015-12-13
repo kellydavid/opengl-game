@@ -18,9 +18,11 @@ int height = 800;
 CameraTransform camera_transform;
 ModelTransform vehicle_transform;
 
+bool keystates[256];
+
 ShaderProgram programs[SH_NUM_PROGRAM_TYPES];
 
-string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL};
+string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL, SKYBOX_MODEL};
 vector<Model> models(NUMBER_MODELS);
 
 void display(){
@@ -55,83 +57,40 @@ void display(){
     glutSwapBuffers();
 }
 
-void updateScene() {
-    
-    // Placeholder code, if you want to work with framerate
-    // Wait until at least 16ms passed since start of last frame (Effectively caps framerate at ~60fps)
-    /*
-     static DWORD  last_time = 0;
-     DWORD  curr_time = timeGetTime();
-     float  delta = (curr_time - last_time) * 0.001f;
-     if (delta > 0.03f)
-     delta = 0.03f;
-     last_time = curr_time;
-     */
-    // Draw the next frame
-    glutPostRedisplay();
-}
-
-void initialise_transforms(){
-    camera_transform.eye = vec3(0.0, 10.0, 0.0);
-    models[1].modelTransform.scale = vec3(6.0, 6.0, 6.0);
-    models[0].modelTransform.scale = vec3(0.8, 0.8, 0.8);
-    models[0].modelTransform.rotation = vec3(-90.0, 0.0, 0.0);
-    models[0].modelTransform.translation = vec3(-90.0, 0.0, 180.0);
-}
-
-void init()
-{
-    // setup vaos
-    for(int i = 0; i < NUMBER_MODELS; i++){
-        models[i].setup_vao();
-    }
-    
-    for(int i = 0; i < SH_NUM_PROGRAM_TYPES; i++){
-        programs[i] = *new ShaderProgram(static_cast<SH_PROGRAM_TYPE>(i));
-    }
-    
-    for(int i = 0; i < NUMBER_MODELS; i++){
-        models[i].load_model(model_filenames[i]);
-    }
-    
-    initialise_transforms();
-}
-
-// Placeholder code for the keypress
-void keypress(unsigned char key, int x, int y) {
+void UpdateKeys(){
     bool turn_right, turn_left, up, down, forward, back;
-    if(key == 'a'){
+    if(keystates['a']){
         turn_left = true;
     }else{
         turn_left = false;
     }
     
-    if(key == 'd'){
+    if(keystates['d']){
         turn_right = true;
         
     }else{
         turn_right = false;
     }
     
-    if(key == 'w'){
+    if(keystates['w']){
         forward = true;
     }else{
         forward = false;
     }
     
-    if(key == 's'){
+    if(keystates['s']){
         back = true;
     }else{
         back = false;
     }
     
-    if(key == 'e'){
+    if(keystates['e']){
         up = true;
     }else{
         up = false;
     }
     
-    if(key == 'q'){
+    if(keystates['q']){
         down = true;
     }else{
         down = false;
@@ -163,6 +122,61 @@ void keypress(unsigned char key, int x, int y) {
     }
 }
 
+void updateScene() {
+    
+    // Placeholder code, if you want to work with framerate
+    // Wait until at least 16ms passed since start of last frame (Effectively caps framerate at ~60fps)
+    /*
+     static DWORD  last_time = 0;
+     DWORD  curr_time = timeGetTime();
+     float  delta = (curr_time - last_time) * 0.001f;
+     if (delta > 0.03f)
+     delta = 0.03f;
+     last_time = curr_time;
+     */
+    // Draw the next frame
+    UpdateKeys();
+    glutPostRedisplay();
+}
+
+void initialise_transforms(){
+    camera_transform.eye = vec3(0.0, 10.0, 0.0);
+    models[SKYBOX_INDEX].modelTransform.scale = vec3(800.0, 800.0, 800.0);
+    models[STREET_INDEX].modelTransform.scale = vec3(6.0, 6.0, 6.0);
+    models[VEHICLE_INDEX].modelTransform.scale = vec3(0.8, 0.8, 0.8);
+    models[VEHICLE_INDEX].modelTransform.rotation = vec3(-90.0, 0.0, 0.0);
+    models[VEHICLE_INDEX].modelTransform.translation = vec3(-90.0, 0.0, 180.0);
+}
+
+void init()
+{
+    models[SKYBOX_INDEX].set_skybox(true);
+    
+    // setup vaos
+    for(int i = 0; i < NUMBER_MODELS; i++){
+        models[i].setup_vao();
+    }
+    
+    for(int i = 0; i < SH_NUM_PROGRAM_TYPES; i++){
+        programs[i] = *new ShaderProgram(static_cast<SH_PROGRAM_TYPE>(i));
+    }
+    
+    for(int i = 0; i < NUMBER_MODELS; i++){
+        models[i].load_model(model_filenames[i]);
+    }
+    
+    initialise_transforms();
+}
+
+// Placeholder code for the keypress
+void keypressDown(unsigned char key, int x, int y) {
+    keystates[key] = true;
+}
+
+void keypressUp(unsigned char key, int x, int y){
+    keystates[key] = false;
+}
+
 int main(int argc, char** argv){
     
     // Set up the window
@@ -174,7 +188,10 @@ int main(int argc, char** argv){
     // Tell glut where the display function is
     glutDisplayFunc(display);
     glutIdleFunc(updateScene);
-    glutKeyboardFunc(keypress);
+    
+    glutIgnoreKeyRepeat(1);
+    glutKeyboardFunc(keypressDown);
+    glutKeyboardUpFunc(keypressUp);
     
     // Set up your objects and shaders
     init();
