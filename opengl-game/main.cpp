@@ -58,42 +58,39 @@ void display(){
 }
 
 void UpdateKeys(){
-    bool turn_right, turn_left, up, down, forward, back;
+    bool turn_right = false, turn_left = false, up = false, down = false, forward = false, back = false;
+    bool p_right = false, p_left = false, p_forward = false, p_backward = false;
+    
     if(keystates['a']){
         turn_left = true;
-    }else{
-        turn_left = false;
     }
-    
     if(keystates['d']){
         turn_right = true;
-        
-    }else{
-        turn_right = false;
     }
-    
     if(keystates['w']){
         forward = true;
-    }else{
-        forward = false;
     }
-    
     if(keystates['s']){
         back = true;
-    }else{
-        back = false;
     }
-    
     if(keystates['e']){
         up = true;
-    }else{
-        up = false;
     }
-    
     if(keystates['q']){
         down = true;
-    }else{
-        down = false;
+    }
+    
+    if(keystates['i']){
+        p_forward = true;
+    }
+    if(keystates['k']){
+        p_backward = true;
+    }
+    if(keystates['j']){
+        p_left = true;
+    }
+    if(keystates['l']){
+        p_right = true;
     }
     
     if(turn_left){
@@ -120,6 +117,26 @@ void UpdateKeys(){
     if(down){
         camera_transform.eye.v[1] -= camera_transform.fraction;
     }
+    
+    float inc = 0.5;
+    float angle = 5.0;
+    
+    if(p_forward){
+        float radians_angle = models[0].modelTransform.rotation.v[1] * (M_PI / 180);
+        models[0].modelTransform.translation.v[0] += sin(radians_angle) * inc;
+        models[0].modelTransform.translation.v[2] += cos(radians_angle) * inc;
+    }
+    if(p_backward){
+        float radians_angle = models[0].modelTransform.rotation.v[1] * (M_PI / 180);
+        models[0].modelTransform.translation.v[0] -= sin(radians_angle) * inc;
+        models[0].modelTransform.translation.v[2] -= cos(radians_angle) * inc;
+    }
+    if(p_left){
+        models[0].modelTransform.rotation.v[1] += angle;
+    }
+    if(p_right){
+        models[0].modelTransform.rotation.v[1] -= angle;
+    }
 }
 
 void updateScene() {
@@ -143,9 +160,8 @@ void initialise_transforms(){
     camera_transform.eye = vec3(0.0, 10.0, 0.0);
     models[SKYBOX_INDEX].modelTransform.scale = vec3(800.0, 800.0, 800.0);
     models[STREET_INDEX].modelTransform.scale = vec3(6.0, 6.0, 6.0);
-    models[VEHICLE_INDEX].modelTransform.scale = vec3(0.8, 0.8, 0.8);
-    models[VEHICLE_INDEX].modelTransform.rotation = vec3(-90.0, 0.0, 0.0);
-    models[VEHICLE_INDEX].modelTransform.translation = vec3(-90.0, 0.0, 180.0);
+    models[VEHICLE_INDEX].modelTransform.scale = vec3(20.0, 20.0, 20.0);
+    models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
 }
 
 void init()

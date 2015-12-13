@@ -46,8 +46,6 @@
 		63E940FB1C00CAE200E6B27F /* OpenGL.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = OpenGL.framework; path = System/Library/Frameworks/OpenGL.framework; sourceTree = SDKROOT; };
 		63E940FD1C00CAE800E6B27F /* GLUT.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = GLUT.framework; path = System/Library/Frameworks/GLUT.framework; sourceTree = SDKROOT; };
 		63E940FF1C00CC4500E6B27F /* libassimp.3.1.1.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = libassimp.3.1.1.dylib; path = "opengl-game/lib/libassimp.3.1.1.dylib"; sourceTree = "<group>"; };
-		63F805B21C1C87640054F8B6 /* cube_map.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = cube_map.cpp; sourceTree = "<group>"; };
-		63F805B31C1C87640054F8B6 /* cube_map.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = cube_map.hpp; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -98,8 +96,6 @@
 				633AE4181C00DAB9003063F1 /* model.hpp */,
 				6372D4DA1C11DD3300B16EE0 /* transform.cpp */,
 				6372D4DB1C11DD3300B16EE0 /* transform.hpp */,
-				63F805B21C1C87640054F8B6 /* cube_map.cpp */,
-				63F805B31C1C87640054F8B6 /* cube_map.hpp */,
 			);
 			path = "opengl-game";
 			sourceTree = "<group>";
