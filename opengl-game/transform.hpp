@@ -20,7 +20,7 @@ class ModelTransform{
 public:
     vec3 translation = vec3(0.0, 0.0, 0.0);
     vec3 rotation = vec3(0.0, 0.0, 0.0);
-    vec3 scale = vec3(0.0, 0.0, 0.0);
+    vec3 scale = vec3(1.0, 1.0, 1.0);
     
     // prints out the values of the transform
     void print_values();
@@ -37,6 +37,32 @@ public:
     vec3 look();
 };
 
+class ThirdPersonCamera{
+private:
+    float calculateHorizontalDistance();
+    
+    float calculateVerticalDistance();
+public:
+    vec3 position = vec3(0.0, 0.0, 0.0);
+    
+    float pitch = 20.0;
+    float yaw = 0.0;
+    float roll = 0.0;
+    
+    float distanceFromObject = 20.0;
+    float angleAroundObject = 0.0;
+    
+    vec3 positionOfObject;
+    vec3 rotationOfObject;
+    vec3 scaleOfObject;
+    
+    void calculate_position();
+    
+    mat4 get_view();
+};
+
 void rotate_mat4(mat4 *mat, vec3 rotation);
+
+float deg_to_radians(float deg);
 
 #endif /* transform_hpp */

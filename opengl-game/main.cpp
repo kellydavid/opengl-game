@@ -15,7 +15,12 @@ using namespace std;
 int width = 800;
 int height = 800;
 
+enum CAMERA_MODE {FREE_CAMERA, THIRD_PERSON};
+
+
+CAMERA_MODE camera_mode = THIRD_PERSON;
 CameraTransform camera_transform;
+ThirdPersonCamera third_person_camera;
 ModelTransform vehicle_transform;
 
 bool keystates[256];
@@ -42,7 +47,12 @@ void display(){
         
         // values of matrices
         mat4 view = identity_mat4();
-        view = look_at(camera_transform.eye, camera_transform.look(), vec3(0.0, 1.0, 0.0));
+        
+        if(camera_mode == THIRD_PERSON){
+            view = look_at(third_person_camera.position, third_person_camera.positionOfObject, vec3(0.0, 1.0, 0.0));
+        }else if(camera_mode == FREE_CAMERA){
+            view = look_at(camera_transform.eye, camera_transform.look(), vec3(0.0, 1.0, 0.0));
+        }
         mat4 persp_proj = perspective(90.0, (float)width/(float)height, 0.1, 10000.0);
         
         // update uniforms & draw
@@ -60,6 +70,7 @@ void display(){
 void UpdateKeys(){
     bool turn_right = false, turn_left = false, up = false, down = false, forward = false, back = false;
     bool p_right = false, p_left = false, p_forward = false, p_backward = false;
+    float model_moved = false;
     
     if(keystates['a']){
         turn_left = true;
@@ -82,42 +93,22 @@ void UpdateKeys(){
     
     if(keystates['i']){
         p_forward = true;
+        model_moved = true;
     }
     if(keystates['k']){
         p_backward = true;
+        model_moved = true;
     }
     if(keystates['j']){
         p_left = true;
+        model_moved = true;
     }
     if(keystates['l']){
         p_right = true;
+        model_moved = true;
     }
     
-    if(turn_left){
-        camera_transform.angle -= camera_transform.angle_inc;
-        camera_transform.lx = sin(camera_transform.angle);
-        camera_transform.lz = -cos(camera_transform.angle);
-    }
-    if(turn_right){
-        camera_transform.angle += camera_transform.angle_inc;
-        camera_transform.lx = sin(camera_transform.angle);
-        camera_transform.lz = -cos(camera_transform.angle);
-    }
-    if(forward){
-        camera_transform.eye.v[0] += camera_transform.lx * camera_transform.fraction;
-        camera_transform.eye.v[2] += camera_transform.lz * camera_transform.fraction;
-    }
-    if(back){
-        camera_transform.eye.v[0] -= camera_transform.lx * camera_transform.fraction;
-        camera_transform.eye.v[2] -= camera_transform.lz * camera_transform.fraction;
-    }
-    if(up){
-        camera_transform.eye.v[1] += camera_transform.fraction;
-    }
-    if(down){
-        camera_transform.eye.v[1] -= camera_transform.fraction;
-    }
-    
+    // object
     float inc = 0.5;
     float angle = 5.0;
     
@@ -136,6 +127,46 @@ void UpdateKeys(){
     }
     if(p_right){
         models[0].modelTransform.rotation.v[1] -= angle;
+    }
+    
+    
+    // camera
+    if(keystates['1']){
+        camera_mode = FREE_CAMERA;
+    }
+    if(keystates['2']){
+        camera_mode = THIRD_PERSON;
+    }
+    if(camera_mode == FREE_CAMERA){
+        if(turn_left){
+            camera_transform.angle -= camera_transform.angle_inc;
+            camera_transform.lx = sin(camera_transform.angle);
+            camera_transform.lz = -cos(camera_transform.angle);
+        }
+        if(turn_right){
+            camera_transform.angle += camera_transform.angle_inc;
+            camera_transform.lx = sin(camera_transform.angle);
+            camera_transform.lz = -cos(camera_transform.angle);
+        }
+        if(forward){
+            camera_transform.eye.v[0] += camera_transform.lx * camera_transform.fraction;
+            camera_transform.eye.v[2] += camera_transform.lz * camera_transform.fraction;
+        }
+        if(back){
+            camera_transform.eye.v[0] -= camera_transform.lx * camera_transform.fraction;
+            camera_transform.eye.v[2] -= camera_transform.lz * camera_transform.fraction;
+        }
+        if(up){
+            camera_transform.eye.v[1] += camera_transform.fraction;
+        }
+        if(down){
+            camera_transform.eye.v[1] -= camera_transform.fraction;
+        }
+    }else if(camera_mode == THIRD_PERSON){
+        third_person_camera.positionOfObject = models[0].modelTransform.translation;
+        third_person_camera.rotationOfObject = models[0].modelTransform.rotation;
+        third_person_camera.scaleOfObject = models[0].modelTransform.scale;
+        third_person_camera.calculate_position();
     }
 }
 
@@ -160,8 +191,8 @@ void initialise_transforms(){
     camera_transform.eye = vec3(0.0, 10.0, 0.0);
     models[SKYBOX_INDEX].modelTransform.scale = vec3(800.0, 800.0, 800.0);
     models[STREET_INDEX].modelTransform.scale = vec3(6.0, 6.0, 6.0);
-    models[VEHICLE_INDEX].modelTransform.scale = vec3(20.0, 20.0, 20.0);
-    models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
+    models[VEHICLE_INDEX].modelTransform.scale = vec3(2.0, 2.0, 2.0);
+    models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 15.0, 0.0);
 }
 
 void init()

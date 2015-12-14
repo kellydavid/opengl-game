@@ -20,9 +20,9 @@
 using namespace std;
 
 string skybox_images[NUMBER_SKYBOX_IMAGES] = {
-    SKYBOX_GRAY_SKY_POSX, SKYBOX_GRAY_SKY_NEGX,
-    SKYBOX_GRAY_SKY_POSY, SKYBOX_GRAY_SKY_NEGY,
-    SKYBOX_GRAY_SKY_POSZ, SKYBOX_GRAY_SKY_NEGZ
+    SKYBOX_CITY_POSX, SKYBOX_CITY_NEGX,
+    SKYBOX_CITY_POSY, SKYBOX_CITY_NEGY,
+    SKYBOX_CITY_POSZ, SKYBOX_CITY_NEGZ
 };
 
 /**** Model ****/
@@ -73,7 +73,10 @@ void Model::upload_model_transform(ShaderProgram program){
     mat4 model = identity_mat4 ();
     rotate_mat4(&model, this->modelTransform.rotation);
     model = translate(model, this->modelTransform.translation);
-    model = scale(model, this->modelTransform.scale);
+    if(this->modelTransform.scale.v[0] != 1.0 && this->modelTransform.scale.v[1] != 1.0 && this->modelTransform.scale.v[1] != 1.0){
+        model = scale(model, this->modelTransform.scale);
+    }
+    model = translate(model, vec3(-this->modelTransform.translation.v[0], -this->modelTransform.translation.v[1], -this->modelTransform.translation.v[2]));
     //update model matrix on gpu
     int loc_model = glGetUniformLocation(program.programID, SH_UNIFORM_MODEL);
     glUniformMatrix4fv (loc_model, 1, GL_FALSE, model.m);

@@ -17,12 +17,13 @@
 #include "transform.hpp"
 
 #define NUMBER_SKYBOX_IMAGES 6
-#define SKYBOX_GRAY_SKY_POSX "../../opengl-game/CubeMap/graycloud_rt.jpg"
-#define SKYBOX_GRAY_SKY_NEGX "../../opengl-game/CubeMap/graycloud_lf.jpg"
-#define SKYBOX_GRAY_SKY_POSY "../../opengl-game/CubeMap/graycloud_up.jpg"
-#define SKYBOX_GRAY_SKY_NEGY "../../opengl-game/CubeMap/graycloud_dn.jpg"
-#define SKYBOX_GRAY_SKY_POSZ "../../opengl-game/CubeMap/graycloud_bk.jpg"
-#define SKYBOX_GRAY_SKY_NEGZ "../../opengl-game/CubeMap/graycloud_ft.jpg"
+
+#define SKYBOX_CITY_POSX "../../opengl-game/CubeMap/city_right.jpg"
+#define SKYBOX_CITY_NEGX "../../opengl-game/CubeMap/city_left.jpg"
+#define SKYBOX_CITY_POSY "../../opengl-game/CubeMap/city_top.jpg"
+#define SKYBOX_CITY_NEGY "../../opengl-game/CubeMap/city_top.jpg"
+#define SKYBOX_CITY_POSZ "../../opengl-game/CubeMap/city_back.jpg"
+#define SKYBOX_CITY_NEGZ "../../opengl-game/CubeMap/city_front.jpg"
 
 #define RELATIVE_PATH_TO_MODELS "../../opengl-game/Models/"
 #define NUMBER_MODELS 3

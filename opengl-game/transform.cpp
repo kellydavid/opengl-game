@@ -23,3 +23,37 @@ void rotate_mat4(mat4 *mat, vec3 rotation){
     *mat = rotate_y_deg(*mat, rotation.v[1]);
     *mat = rotate_z_deg(*mat, rotation.v[2]);
 }
+
+void ThirdPersonCamera::calculate_position(){
+    float vert = this->calculateVerticalDistance();
+    float hor = this->calculateHorizontalDistance();
+    this->position.v[1] = vert + this->positionOfObject.v[1];
+    float horizontal_distance = hor;
+    float theta = this->angleAroundObject + this->rotationOfObject.v[1];
+    float offsetX = (float) horizontal_distance * sin(deg_to_radians(theta));
+    float offsetZ = (float) horizontal_distance * cos(deg_to_radians(theta));
+    this->position.v[0] = this->positionOfObject.v[0] + offsetX;
+    this->position.v[2] = this->positionOfObject.v[2] + offsetZ;
+    this->yaw = 180 - (this->rotationOfObject.v[1] + angleAroundObject);
+}
+
+float ThirdPersonCamera::calculateHorizontalDistance(){
+    return (float) this->distanceFromObject * cos(deg_to_radians(pitch));
+}
+
+float ThirdPersonCamera::calculateVerticalDistance(){
+    return (float) this->distanceFromObject * sin(deg_to_radians(pitch));
+}
+
+mat4 ThirdPersonCamera::get_view(){
+    mat4 view = identity_mat4();
+    rotate_mat4(&view, vec3(deg_to_radians(pitch), deg_to_radians(yaw), deg_to_radians(roll)));
+    scale(view, this->scaleOfObject);
+    vec3 neg_position = vec3(-this->position.v[0],  -this->position.v[1], -this->position.v[2]);
+    view = translate(view, neg_position);
+    return view;
+}
+
+float deg_to_radians(float deg){
+    return (float) deg * (M_PI / 180);
+}
