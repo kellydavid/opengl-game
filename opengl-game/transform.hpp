@@ -45,7 +45,7 @@ private:
 public:
     vec3 position = vec3(0.0, 0.0, 0.0);
     
-    float pitch = 20.0;
+    float pitch = 30.0;
     float yaw = 0.0;
     float roll = 0.0;
     

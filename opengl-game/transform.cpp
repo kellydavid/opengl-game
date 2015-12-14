@@ -32,8 +32,8 @@ void ThirdPersonCamera::calculate_position(){
     float theta = this->angleAroundObject + this->rotationOfObject.v[1];
     float offsetX = (float) horizontal_distance * sin(deg_to_radians(theta));
     float offsetZ = (float) horizontal_distance * cos(deg_to_radians(theta));
-    this->position.v[0] = this->positionOfObject.v[0] + offsetX;
-    this->position.v[2] = this->positionOfObject.v[2] + offsetZ;
+    this->position.v[0] = this->positionOfObject.v[0] - offsetX;
+    this->position.v[2] = this->positionOfObject.v[2] - offsetZ;
     this->yaw = 180 - (this->rotationOfObject.v[1] + angleAroundObject);
 }
 

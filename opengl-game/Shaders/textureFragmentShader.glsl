@@ -11,9 +11,9 @@ uniform sampler2D basic_texture;
 uniform mat4 view;
 
 // Fixed point light
-vec3 world_light_position = vec3(200.0, 60.0, 0.0);
-vec3 Ls = vec3 (0.4, 0.4, 0.4); // white specular colour
-vec3 Ld = vec3 (0.2, 0.2, 0.2); // dull white diffuse light colour
+vec3 world_light_position = vec3(0.0, 100.0, 0.0);
+vec3 Ls = vec3 (0.7, 0.7, 0.7); // white specular colour
+vec3 Ld = vec3 (0.5, 0.5, 0.5); // dull white diffuse light colour
 vec3 La = vec3 (0.2, 0.2, 0.2); // grey ambient colour
 
 // Surface reflectance
