@@ -49,7 +49,7 @@ public:
     float yaw = 0.0;
     float roll = 0.0;
     
-    float distanceFromObject = 20.0;
+    float distanceFromObject = 80.0;
     float angleAroundObject = 0.0;
     
     vec3 positionOfObject;

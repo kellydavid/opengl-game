@@ -30,6 +30,8 @@ ShaderProgram programs[SH_NUM_PROGRAM_TYPES];
 string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL, SKYBOX_MODEL};
 vector<Model> models(NUMBER_MODELS);
 
+vector<vector <ModelTransform>> street_grid(4);
+
 void display(){
     
     // tell GL to only draw onto a pixel if the shape is closer to the viewer
@@ -190,9 +192,9 @@ void updateScene() {
 void initialise_transforms(){
     camera_transform.eye = vec3(0.0, 10.0, 0.0);
     models[SKYBOX_INDEX].modelTransform.scale = vec3(800.0, 800.0, 800.0);
-    models[STREET_INDEX].modelTransform.scale = vec3(6.0, 6.0, 6.0);
+    models[STREET_INDEX].modelTransform.scale = vec3(8.0, 8.0, 8.0);
     models[VEHICLE_INDEX].modelTransform.scale = vec3(2.0, 2.0, 2.0);
-    models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 15.0, 0.0);
+    models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
 }
 
 void init()
