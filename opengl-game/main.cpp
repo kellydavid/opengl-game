@@ -30,7 +30,11 @@ ShaderProgram programs[SH_NUM_PROGRAM_TYPES];
 string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL, SKYBOX_MODEL};
 vector<Model> models(NUMBER_MODELS);
 
-vector<vector <ModelTransform>> street_grid(4);
+#define STREET_MODEL_WIDTH 96.717
+#define STREET_MODEL_LENGTH 94.192
+#define STREET_MODEL_SCALE 6.0
+#define STREET_GRID_SIZE 5
+vector<vector <ModelTransform>> street_grid(STREET_GRID_SIZE);
 
 void display(){
     
@@ -62,8 +66,13 @@ void display(){
         glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view.m);
     }
     
-    for(int i = 0; i < NUMBER_MODELS; i++){
-        models[i].draw_model(programs);
+    models[VEHICLE_INDEX].draw_model(programs);
+    models[SKYBOX_INDEX].draw_model(programs);
+    for(int i = 0; i < STREET_GRID_SIZE; i++){
+        for(int j = 0; j < STREET_GRID_SIZE; j++){
+            models[STREET_INDEX].modelTransform = street_grid[i][j];
+            models[STREET_INDEX].draw_model(programs);
+        }
     }
     
     glutSwapBuffers();
@@ -111,24 +120,24 @@ void UpdateKeys(){
     }
     
     // object
-    float inc = 0.5;
+    float inc = 1.5;
     float angle = 5.0;
     
     if(p_forward){
-        float radians_angle = models[0].modelTransform.rotation.v[1] * (M_PI / 180);
-        models[0].modelTransform.translation.v[0] += sin(radians_angle) * inc;
-        models[0].modelTransform.translation.v[2] += cos(radians_angle) * inc;
+        float radians_angle = models[VEHICLE_INDEX].modelTransform.rotation.v[1] * (M_PI / 180);
+        models[VEHICLE_INDEX].modelTransform.translation.v[0] += sin(radians_angle) * inc;
+        models[VEHICLE_INDEX].modelTransform.translation.v[2] += cos(radians_angle) * inc;
     }
     if(p_backward){
-        float radians_angle = models[0].modelTransform.rotation.v[1] * (M_PI / 180);
-        models[0].modelTransform.translation.v[0] -= sin(radians_angle) * inc;
-        models[0].modelTransform.translation.v[2] -= cos(radians_angle) * inc;
+        float radians_angle = models[VEHICLE_INDEX].modelTransform.rotation.v[1] * (M_PI / 180);
+        models[VEHICLE_INDEX].modelTransform.translation.v[0] -= sin(radians_angle) * inc;
+        models[VEHICLE_INDEX].modelTransform.translation.v[2] -= cos(radians_angle) * inc;
     }
     if(p_left){
-        models[0].modelTransform.rotation.v[1] += angle;
+        models[VEHICLE_INDEX].modelTransform.rotation.v[1] += angle;
     }
     if(p_right){
-        models[0].modelTransform.rotation.v[1] -= angle;
+        models[VEHICLE_INDEX].modelTransform.rotation.v[1] -= angle;
     }
     
     
@@ -191,8 +200,7 @@ void updateScene() {
 
 void initialise_transforms(){
     camera_transform.eye = vec3(0.0, 10.0, 0.0);
-    models[SKYBOX_INDEX].modelTransform.scale = vec3(800.0, 800.0, 800.0);
-    models[STREET_INDEX].modelTransform.scale = vec3(8.0, 8.0, 8.0);
+    models[SKYBOX_INDEX].modelTransform.scale = vec3(1200.0, 1200.0, 1200.0);
     models[VEHICLE_INDEX].modelTransform.scale = vec3(2.0, 2.0, 2.0);
     models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
 }
@@ -200,6 +208,18 @@ void initialise_transforms(){
 void init()
 {
     models[SKYBOX_INDEX].set_skybox(true);
+    
+    for(int i = 0; i < STREET_GRID_SIZE; i++){
+        for(int j = 0; j < STREET_GRID_SIZE; j++){
+            ModelTransform tran;
+            tran.scale = vec3(STREET_MODEL_SCALE, STREET_MODEL_SCALE, STREET_MODEL_SCALE);
+            float offX = (i - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_LENGTH + 40.0) / 2);
+            float offZ = (j - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_WIDTH + 40.0) / 2);
+            cout << "Street (" << i << ", " << j << ") x:" << to_string(offX) << " z:" << offZ << endl;
+            tran.translation = vec3(offX, 0.0, offZ);
+            street_grid[i].push_back(tran);
+        }
+    }
     
     // setup vaos
     for(int i = 0; i < NUMBER_MODELS; i++){
@@ -248,14 +268,3 @@ int main(int argc, char** argv){
     glutMainLoop();
     return 0;
 }
-
-
-
-
-
-
-
-
-
-
-
