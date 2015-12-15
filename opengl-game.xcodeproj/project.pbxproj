@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		633AE4161C00CDB6003063F1 /* shaders.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 633AE4141C00CDB6003063F1 /* shaders.cpp */; };
 		633AE4191C00DAB9003063F1 /* model.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 633AE4171C00DAB9003063F1 /* model.cpp */; };
+		63497E761C1F9B770088FC46 /* text.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63497E741C1F9B770088FC46 /* text.cpp */; };
 		6372D4DC1C11DD3300B16EE0 /* transform.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 6372D4DA1C11DD3300B16EE0 /* transform.cpp */; };
 		63E940EF1C00C9BF00E6B27F /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63E940EE1C00C9BF00E6B27F /* main.cpp */; };
 		63E940FA1C00CABD00E6B27F /* maths_funcs.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 63E940F51C00CABD00E6B27F /* maths_funcs.cpp */; };
@@ -34,6 +35,8 @@
 		633AE4151C00CDB6003063F1 /* shaders.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = shaders.hpp; sourceTree = "<group>"; };
 		633AE4171C00DAB9003063F1 /* model.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = model.cpp; sourceTree = "<group>"; };
 		633AE4181C00DAB9003063F1 /* model.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = model.hpp; sourceTree = "<group>"; };
+		63497E741C1F9B770088FC46 /* text.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = text.cpp; sourceTree = "<group>"; };
+		63497E751C1F9B770088FC46 /* text.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = text.h; sourceTree = "<group>"; };
 		6372D4DA1C11DD3300B16EE0 /* transform.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = transform.cpp; sourceTree = "<group>"; };
 		6372D4DB1C11DD3300B16EE0 /* transform.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = transform.hpp; sourceTree = "<group>"; };
 		63E940EB1C00C9BF00E6B27F /* opengl-game */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = "opengl-game"; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -84,6 +87,8 @@
 		63E940ED1C00C9BF00E6B27F /* opengl-game */ = {
 			isa = PBXGroup;
 			children = (
+				63497E741C1F9B770088FC46 /* text.cpp */,
+				63497E751C1F9B770088FC46 /* text.h */,
 				63E940F51C00CABD00E6B27F /* maths_funcs.cpp */,
 				63E940F61C00CABD00E6B27F /* maths_funcs.h */,
 				63E940F71C00CABD00E6B27F /* Models */,
@@ -158,6 +163,7 @@
 			files = (
 				6372D4DC1C11DD3300B16EE0 /* transform.cpp in Sources */,
 				63E940EF1C00C9BF00E6B27F /* main.cpp in Sources */,
+				63497E761C1F9B770088FC46 /* text.cpp in Sources */,
 				633AE4191C00DAB9003063F1 /* model.cpp in Sources */,
 				633AE4161C00CDB6003063F1 /* shaders.cpp in Sources */,
 				63E940FA1C00CABD00E6B27F /* maths_funcs.cpp in Sources */,

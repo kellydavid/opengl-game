@@ -6,14 +6,15 @@
 #include "shaders.hpp"
 #include "transform.hpp"
 #include "model.hpp"
+#include "text.h"
 
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 using namespace std;
 
-int width = 800;
-int height = 800;
+int viewport_width = 800;
+int viewport_height = 800;
 
 enum CAMERA_MODE {FREE_CAMERA, THIRD_PERSON};
 
@@ -59,7 +60,7 @@ void display(){
         }else if(camera_mode == FREE_CAMERA){
             view = look_at(camera_transform.eye, camera_transform.look(), vec3(0.0, 1.0, 0.0));
         }
-        mat4 persp_proj = perspective(90.0, (float)width/(float)height, 0.1, 10000.0);
+        mat4 persp_proj = perspective(90.0, (float)viewport_width/(float)viewport_height, 0.1, 10000.0);
         
         // update uniforms & draw
         glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, persp_proj.m);
@@ -74,6 +75,8 @@ void display(){
             models[STREET_INDEX].draw_model(programs);
         }
     }
+    
+    draw_texts();
     
     glutSwapBuffers();
 }
@@ -235,6 +238,15 @@ void init()
     }
     
     initialise_transforms();
+    
+    // initialise text
+    init_text_rendering ("../../opengl-game/text/freemono.png", "../../opengl-game/text/freemono.meta", viewport_width, viewport_height);
+    // x and y are -1 to 1
+    // size_px is the maximum glyph size in pixels (try 100.0f)
+    // r,g,b,a are red,blue,green,opacity values between 0.0 and 1.0
+    // if you want to change the text later you will use the returned integer as a parameter
+    float x = -1.0, y = 1.0, size_px = 20.0, r = 1.0, g = 0.0, b = 0.0, a = 1.0;
+    int hello_id = add_text ("Hello world!", x, y, size_px, r, g, b, a);
 }
 
 // Placeholder code for the keypress
@@ -251,7 +263,7 @@ int main(int argc, char** argv){
     // Set up the window
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
-    glutInitWindowSize(width, height);
+    glutInitWindowSize(viewport_width, viewport_height);
     glutCreateWindow("Street Vehicle");
     
     // Tell glut where the display function is
