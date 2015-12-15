@@ -17,7 +17,12 @@ int viewport_width = 800;
 int viewport_height = 800;
 
 enum CAMERA_MODE {FREE_CAMERA, THIRD_PERSON};
+enum GAME_STATE {INIT_GAME, PLAY_GAME, WON_GAME, LOST_GAME};
 
+#define GAME_COUNTDOWN_DURATION 30 // seconds
+double game_countdown = 30; // time in seconds
+GAME_STATE game_state = INIT_GAME;
+int game_countdown_text_id;
 
 CAMERA_MODE camera_mode = THIRD_PERSON;
 CameraTransform camera_transform;
@@ -36,6 +41,42 @@ vector<Model> models(NUMBER_MODELS);
 #define STREET_MODEL_SCALE 6.0
 #define STREET_GRID_SIZE 5
 vector<vector <ModelTransform>> street_grid(STREET_GRID_SIZE);
+
+void play_game(){
+    static double previous_seconds = glutGet(GLUT_ELAPSED_TIME) / 1000;
+    double current_seconds = glutGet(GLUT_ELAPSED_TIME) / 1000;
+    double elapsed_seconds = current_seconds - previous_seconds;
+    previous_seconds = current_seconds;
+    
+    cout << "Game State: " << game_state << endl;
+    
+    switch (game_state) {
+        case INIT_GAME:
+            models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
+            game_countdown = GAME_COUNTDOWN_DURATION;
+            // x and y are -1 to 1
+            // size_px is the maximum glyph size in pixels (try 100.0f)
+            // r,g,b,a are red,blue,green,opacity values between 0.0 and 1.0
+            // if you want to change the text later you will use the returned integer as a parameter
+            game_state = PLAY_GAME;
+            break;
+        case PLAY_GAME:
+            game_countdown -= elapsed_seconds;
+            // check if vehicle is at object
+            if(game_countdown <= 0.0){
+                game_state = LOST_GAME;
+            }
+            break;
+        case WON_GAME:
+        case LOST_GAME:
+            break;
+        default:
+            break;
+    }
+    
+    string str = "Timer: " + to_string((int)game_countdown);
+    update_text(game_countdown_text_id, str.c_str());
+}
 
 void display(){
     
@@ -122,6 +163,10 @@ void UpdateKeys(){
         model_moved = true;
     }
     
+    if(keystates['0']){
+        game_state = INIT_GAME;
+    }
+    
     // object
     float inc = 1.5;
     float angle = 5.0;
@@ -182,6 +227,8 @@ void UpdateKeys(){
         third_person_camera.scaleOfObject = models[0].modelTransform.scale;
         third_person_camera.calculate_position();
     }
+    
+    play_game();
 }
 
 void updateScene() {
@@ -241,12 +288,8 @@ void init()
     
     // initialise text
     init_text_rendering ("../../opengl-game/text/freemono.png", "../../opengl-game/text/freemono.meta", viewport_width, viewport_height);
-    // x and y are -1 to 1
-    // size_px is the maximum glyph size in pixels (try 100.0f)
-    // r,g,b,a are red,blue,green,opacity values between 0.0 and 1.0
-    // if you want to change the text later you will use the returned integer as a parameter
-    float x = -1.0, y = 1.0, size_px = 20.0, r = 1.0, g = 0.0, b = 0.0, a = 1.0;
-    int hello_id = add_text ("Hello world!", x, y, size_px, r, g, b, a);
+    float x = -1.0, y = 1.0, size_px = 30.0, r = 1.0, g = 0.0, b = 0.0, a = 1.0;
+    game_countdown_text_id = add_text ("", x, y, size_px, r, g, b, a);
 }
 
 // Placeholder code for the keypress
