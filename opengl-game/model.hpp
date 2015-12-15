@@ -26,13 +26,15 @@
 #define SKYBOX_CITY_NEGZ "../../opengl-game/CubeMap/city_front.jpg"
 
 #define RELATIVE_PATH_TO_MODELS "../../opengl-game/Models/"
-#define NUMBER_MODELS 3
+#define NUMBER_MODELS 4
 #define VEHICLE_MODEL "f360.obj"
 #define STREET_MODEL "street2.obj"
 #define SKYBOX_MODEL "cube.obj"
+#define PICKUP_OBJECT "monkeyhead.obj"
 #define VEHICLE_INDEX 0
 #define STREET_INDEX 1
 #define SKYBOX_INDEX 2
+#define PICKUP_OBJECT_INDEX 3
 
 
 class Model;

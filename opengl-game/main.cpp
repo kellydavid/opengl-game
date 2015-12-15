@@ -17,12 +17,16 @@ int viewport_width = 800;
 int viewport_height = 800;
 
 enum CAMERA_MODE {FREE_CAMERA, THIRD_PERSON};
-enum GAME_STATE {INIT_GAME, PLAY_GAME, WON_GAME, LOST_GAME};
+enum GAME_STATE {INIT_GAME, PLAY_GAME, WON_GAME, LOST_GAME, NOT_PLAYING};
 
 #define GAME_COUNTDOWN_DURATION 30 // seconds
+#define DISTANCE_COLLISION 7.0
 double game_countdown = 30; // time in seconds
-GAME_STATE game_state = INIT_GAME;
+GAME_STATE game_state = NOT_PLAYING;
 int game_countdown_text_id;
+float distance_from_object;
+int game_distance_text;
+int game_end_message_text;
 
 CAMERA_MODE camera_mode = THIRD_PERSON;
 CameraTransform camera_transform;
@@ -33,7 +37,7 @@ bool keystates[256];
 
 ShaderProgram programs[SH_NUM_PROGRAM_TYPES];
 
-string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL, SKYBOX_MODEL};
+string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL, SKYBOX_MODEL, PICKUP_OBJECT};
 vector<Model> models(NUMBER_MODELS);
 
 #define STREET_MODEL_WIDTH 96.717
@@ -42,22 +46,28 @@ vector<Model> models(NUMBER_MODELS);
 #define STREET_GRID_SIZE 5
 vector<vector <ModelTransform>> street_grid(STREET_GRID_SIZE);
 
+float get_distance(float x1, float y1, float x2, float y2){
+    float diffX = x2 - x1;
+    float diffY = y2 - y1;
+    return sqrtf((diffX * diffX) + (diffY * diffY));
+}
+
 void play_game(){
     static double previous_seconds = glutGet(GLUT_ELAPSED_TIME) / 1000;
     double current_seconds = glutGet(GLUT_ELAPSED_TIME) / 1000;
     double elapsed_seconds = current_seconds - previous_seconds;
     previous_seconds = current_seconds;
-    
-    cout << "Game State: " << game_state << endl;
+    string str;
     
     switch (game_state) {
         case INIT_GAME:
+            distance_from_object = 0.0;
+            update_text(game_end_message_text, "");
+            models[VEHICLE_INDEX].modelTransform.rotation = vec3(0.0, 0.0, 0.0);
             models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
             game_countdown = GAME_COUNTDOWN_DURATION;
-            // x and y are -1 to 1
-            // size_px is the maximum glyph size in pixels (try 100.0f)
-            // r,g,b,a are red,blue,green,opacity values between 0.0 and 1.0
-            // if you want to change the text later you will use the returned integer as a parameter
+            models[PICKUP_OBJECT_INDEX].modelTransform.scale = vec3(2.0, 2.0, 2.0);
+            models[PICKUP_OBJECT_INDEX].modelTransform.translation = vec3(343.0, 15.0, 347.0);
             game_state = PLAY_GAME;
             break;
         case PLAY_GAME:
@@ -66,16 +76,30 @@ void play_game(){
             if(game_countdown <= 0.0){
                 game_state = LOST_GAME;
             }
+            distance_from_object = get_distance(models[VEHICLE_INDEX].modelTransform.translation.v[0], models[VEHICLE_INDEX].modelTransform.translation.v[2], models[PICKUP_OBJECT_INDEX].modelTransform.translation.v[0], models[PICKUP_OBJECT_INDEX].modelTransform.translation.v[2]);
+            if(distance_from_object <= DISTANCE_COLLISION){
+                game_state = WON_GAME;
+            }
+            // update text on screen
+            str = "Timer: " + to_string((int)game_countdown);
+            update_text(game_countdown_text_id, str.c_str());
+            str = "Distance: " + to_string((int)distance_from_object);
+            update_text(game_distance_text, str.c_str());
             break;
         case WON_GAME:
+            update_text(game_end_message_text, "WON GAME");
+            break;
         case LOST_GAME:
+            update_text(game_end_message_text, "LOST GAME");
+            break;
+        case NOT_PLAYING:
+            update_text(game_end_message_text, "");
+            update_text(game_distance_text, "");
+            update_text(game_countdown_text_id, "");
             break;
         default:
             break;
     }
-    
-    string str = "Timer: " + to_string((int)game_countdown);
-    update_text(game_countdown_text_id, str.c_str());
 }
 
 void display(){
@@ -115,6 +139,9 @@ void display(){
             models[STREET_INDEX].modelTransform = street_grid[i][j];
             models[STREET_INDEX].draw_model(programs);
         }
+    }
+    if(game_state != NOT_PLAYING){
+        models[PICKUP_OBJECT_INDEX].draw_model(programs);
     }
     
     draw_texts();
@@ -165,6 +192,9 @@ void UpdateKeys(){
     
     if(keystates['0']){
         game_state = INIT_GAME;
+    }
+    if(keystates['9']){
+        game_state = NOT_PLAYING;
     }
     
     // object
@@ -227,8 +257,6 @@ void UpdateKeys(){
         third_person_camera.scaleOfObject = models[0].modelTransform.scale;
         third_person_camera.calculate_position();
     }
-    
-    play_game();
 }
 
 void updateScene() {
@@ -245,6 +273,7 @@ void updateScene() {
      */
     // Draw the next frame
     UpdateKeys();
+    play_game();
     glutPostRedisplay();
 }
 
@@ -288,8 +317,14 @@ void init()
     
     // initialise text
     init_text_rendering ("../../opengl-game/text/freemono.png", "../../opengl-game/text/freemono.meta", viewport_width, viewport_height);
+    // x and y are -1 to 1
+    // size_px is the maximum glyph size in pixels (try 100.0f)
+    // r,g,b,a are red,blue,green,opacity values between 0.0 and 1.0
+    // if you want to change the text later you will use the returned integer as a parameter
     float x = -1.0, y = 1.0, size_px = 30.0, r = 1.0, g = 0.0, b = 0.0, a = 1.0;
     game_countdown_text_id = add_text ("", x, y, size_px, r, g, b, a);
+    game_distance_text = add_text("", x, y - 0.08, size_px, r, g, b, a);
+    game_end_message_text = add_text("", -0.5, 0.5, size_px, r, g, b, a);
 }
 
 // Placeholder code for the keypress
