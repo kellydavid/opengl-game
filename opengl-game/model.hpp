@@ -27,7 +27,7 @@
 
 #define RELATIVE_PATH_TO_MODELS "../../opengl-game/Models/"
 #define NUMBER_MODELS 4
-#define VEHICLE_MODEL "f360.obj"
+#define VEHICLE_MODEL "dpv.obj"
 #define STREET_MODEL "street2.obj"
 #define SKYBOX_MODEL "cube.obj"
 #define PICKUP_OBJECT "monkeyhead.obj"
