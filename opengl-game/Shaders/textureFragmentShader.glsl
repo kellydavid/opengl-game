@@ -12,12 +12,12 @@ uniform mat4 view;
 uniform vec3 world_light_position;
 
 // Fixed point light
-vec3 Ls = vec3 (0.7, 0.7, 0.7); // white specular colour
-vec3 Ld = vec3 (0.5, 0.5, 0.5); // dull white diffuse light colour
-vec3 La = vec3 (0.2, 0.2, 0.2); // grey ambient colour
+vec3 Ls = vec3 (0.8, 0.8, 0.8); // white specular colour
+vec3 Ld = vec3 (0.6, 0.6, 0.6); // dull white diffuse light colour
+vec3 La = vec3 (0.4, 0.4, 0.4); // grey ambient colour
 
 // Surface reflectance
-vec3 Ks = vec3 (0.3, 0.3, 0.3); // fully reflect specular light
+vec3 Ks = vec3 (0.2, 0.2, 0.2); // fully reflect specular light
 vec3 Kd = vec3 (1.0, 1.0, 1.0); // orange diffuse surface reflectance
 vec3 Ka = vec3 (0.3, 0.3, 0.3); // fully reflect ambient light
 float specular_exponent = 1.0; // specular 'power'

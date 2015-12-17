@@ -10,9 +10,9 @@ uniform vec3 color;
 uniform vec3 world_light_position;
 
 // Fixed point light
-vec3 Ls = vec3 (0.4, 0.4, 0.4); // white specular colour
-vec3 Ld = vec3 (0.2, 0.2, 0.2); // dull white diffuse light colour
-vec3 La = vec3 (0.2, 0.2, 0.2); // grey ambient colour
+vec3 Ls = vec3 (0.8, 0.8, 0.8); // white specular colour
+vec3 Ld = vec3 (0.6, 0.6, 0.6); // dull white diffuse light colour
+vec3 La = vec3 (0.4, 0.4, 0.4); // grey ambient colour
 
 // Surface reflectance
 vec3 Ks = vec3 (0.1, 0.1, 0.1); // fully reflect specular light

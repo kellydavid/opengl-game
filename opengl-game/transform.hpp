@@ -45,11 +45,11 @@ private:
 public:
     vec3 position = vec3(0.0, 0.0, 0.0);
     
-    float pitch = 30.0;
+    float pitch = 35.0;
     float yaw = 0.0;
     float roll = 0.0;
     
-    float distanceFromObject = 80.0;
+    float distanceFromObject = 60.0;
     float angleAroundObject = 0.0;
     
     vec3 positionOfObject;

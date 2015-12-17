@@ -11,7 +11,7 @@
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
-#define WORLD_LIGHT_HEIGHT 100.0
+#define WORLD_LIGHT_HEIGHT 300.0
 
 using namespace std;
 
@@ -204,8 +204,8 @@ void UpdateKeys(){
     }
     
     // object
-    float inc = 1.5;
-    float angle = 5.0;
+    float inc = 4.0;
+    float angle = 3.0;
     
     if(p_forward){
         float radians_angle = models[VEHICLE_INDEX].modelTransform.rotation.v[1] * (M_PI / 180);
@@ -285,7 +285,7 @@ void updateScene() {
 
 void initialise_transforms(){
     camera_transform.eye = vec3(0.0, 10.0, 0.0);
-    models[SKYBOX_INDEX].modelTransform.scale = vec3(1200.0, 1200.0, 1200.0);
+    models[SKYBOX_INDEX].modelTransform.scale = vec3(1450.0, 1450.0, 1450.0);
     models[VEHICLE_INDEX].modelTransform.scale = vec3(2.0, 2.0, 2.0);
     models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
 }
@@ -331,14 +331,14 @@ void init(){
     game_distance_text = add_text("", x, y - 0.08, size_px, r, g, b, a);
     game_end_message_text = add_text("", -0.5, 0.5, size_px, r, g, b, a);
     
-    object_starting_points[0].push_back(-960.0);
-    object_starting_points[0].push_back(-990.0);
-    object_starting_points[1].push_back(-953.0);
-    object_starting_points[1].push_back(958.0);
-    object_starting_points[2].push_back(921.0);
-    object_starting_points[2].push_back(940.0);
-    object_starting_points[3].push_back(931.0);
-    object_starting_points[3].push_back(-990.0);
+    object_starting_points[0].push_back(-1140.0);
+    object_starting_points[0].push_back(-1165.0);
+    object_starting_points[1].push_back(-1140.0);
+    object_starting_points[1].push_back(1150.0);
+    object_starting_points[2].push_back(1090.0);
+    object_starting_points[2].push_back(1100.0);
+    object_starting_points[3].push_back(1120.0);
+    object_starting_points[3].push_back(-1120.0);
     
 }
 
