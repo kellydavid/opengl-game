@@ -11,6 +11,8 @@
 // Macro for indexing vertex buffer
 #define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
+#define WORLD_LIGHT_HEIGHT 100.0
+
 using namespace std;
 
 int viewport_width = 800;
@@ -118,10 +120,11 @@ void display(){
         //Declare your uniform variables that will be used in your shaders
         int view_mat_location = glGetUniformLocation (programs[i].programID, SH_UNIFORM_VIEW);
         int proj_mat_location = glGetUniformLocation (programs[i].programID, SH_UNIFORM_PERSPECTIVE);
+        int wlp_location = glGetUniformLocation(programs[i].programID, SH_UNIFORM_LIGHT_POSITION);
         
         // values of matrices
         mat4 view = identity_mat4();
-        
+        vec3 world_light_position = vec3(models[VEHICLE_INDEX].modelTransform.translation.v[0], WORLD_LIGHT_HEIGHT, models[VEHICLE_INDEX].modelTransform.translation.v[2]);
         if(camera_mode == THIRD_PERSON){
             view = look_at(third_person_camera.position, third_person_camera.positionOfObject, vec3(0.0, 1.0, 0.0));
         }else if(camera_mode == FREE_CAMERA){
@@ -132,6 +135,7 @@ void display(){
         // update uniforms & draw
         glUniformMatrix4fv (proj_mat_location, 1, GL_FALSE, persp_proj.m);
         glUniformMatrix4fv (view_mat_location, 1, GL_FALSE, view.m);
+        glUniform3fv(wlp_location, 1, world_light_position.v);
     }
     
     models[VEHICLE_INDEX].draw_model(programs);

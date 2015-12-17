@@ -9,9 +9,9 @@ in vec2 texture_coordinates;
 uniform sampler2D basic_texture;
 
 uniform mat4 view;
+uniform vec3 world_light_position;
 
 // Fixed point light
-vec3 world_light_position = vec3(0.0, 100.0, 0.0);
 vec3 Ls = vec3 (0.7, 0.7, 0.7); // white specular colour
 vec3 Ld = vec3 (0.5, 0.5, 0.5); // dull white diffuse light colour
 vec3 La = vec3 (0.2, 0.2, 0.2); // grey ambient colour

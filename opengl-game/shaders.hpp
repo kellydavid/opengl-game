@@ -33,7 +33,7 @@
 #define SH_UNIFORM_VIEW "view"
 #define SH_UNIFORM_PERSPECTIVE "proj"
 #define SH_UNIFORM_COLOR "color"
-#define SH_UNIFORM_DRAW_SKYBOX "draw_skybox"
+#define SH_UNIFORM_LIGHT_POSITION "world_light_position"
 
 #define SH_NUM_PROGRAM_TYPES 3
 enum SH_PROGRAM_TYPE{SH_COL_PROG, SH_TEX_PROG, SH_SKYBOX_PROG};
