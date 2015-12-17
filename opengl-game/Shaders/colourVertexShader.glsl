@@ -12,7 +12,15 @@ uniform mat4 model;
 
 uniform vec3 color;
 
+out float visibility;
+const float density = 0.001;
+const float gradient = 2.0;
+
 void main(){
+    vec4 world_position = model * vec4(vertex_position,1.0);
+    vec4 positionRelativeToCam = view * world_position;
+    float distance = length(positionRelativeToCam.xyz);
+    visibility = exp(-pow((distance * density),gradient));
     
     position_eye = vec3 (view * model * vec4 (vertex_position, 1.0));
     normal_eye = vec3 (view * model * vec4 (vertex_normal, 0.0));

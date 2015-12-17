@@ -9,7 +9,11 @@ in vec2 texture_coordinates;
 uniform sampler2D basic_texture;
 
 uniform mat4 view;
+
 uniform vec3 world_light_position;
+
+in float visibility;
+vec3 skyColour = vec3(0.8, 0.8, 0.8);
 
 // Fixed point light
 vec3 Ls = vec3 (0.8, 0.8, 0.8); // white specular colour
@@ -58,4 +62,5 @@ void main(){
     
     vec4 texel = texture(basic_texture, texture_coordinates);
     FragColor = texel * FragColor;
+    FragColor = mix(vec4(skyColour, 1.0), FragColor, visibility);
 }

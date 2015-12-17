@@ -12,6 +12,10 @@ uniform mat4 view;
 uniform mat4 proj;
 uniform mat4 model;
 
+out float visibility;
+const float density = 0.001;
+const float gradient = 2.0;
+
 void main(){
 /*
   mat4 ModelViewMatrix = view * model;
@@ -31,6 +35,10 @@ void main(){
   gl_Position = proj * view * model * vec4(vertex_position,1.0);
     
  */
+    vec4 world_position = model * vec4(vertex_position,1.0);
+    vec4 positionRelativeToCam = view * world_position;
+    float distance = length(positionRelativeToCam.xyz);
+    visibility = exp(-pow((distance * density),gradient));
     
     texture_coordinates = vertex_texture; // output texture coordinates
     position_eye = vec3 (view * model * vec4 (vertex_position, 1.0));

@@ -22,6 +22,9 @@ float specular_exponent = 1.0; // specular 'power'
 
 out vec4 FragColor;
 
+in float visibility;
+vec3 skyColour = vec3(0.8, 0.8, 0.8);
+
 void main(){
     // ambient intensity
     vec3 Ia = La * Ka;
@@ -52,4 +55,5 @@ void main(){
     
     // final colour
     FragColor = vec4 (Is + Id + Ia, 1.0);
+    FragColor = mix(vec4(skyColour, 1.0), FragColor, visibility);
 }
