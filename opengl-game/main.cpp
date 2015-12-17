@@ -43,9 +43,9 @@ ShaderProgram programs[SH_NUM_PROGRAM_TYPES];
 string *model_filenames = new string[NUMBER_MODELS]{VEHICLE_MODEL, STREET_MODEL, SKYBOX_MODEL, PICKUP_OBJECT};
 vector<Model> models(NUMBER_MODELS);
 
-#define STREET_MODEL_WIDTH 96.717
-#define STREET_MODEL_LENGTH 94.192
-#define STREET_MODEL_SCALE 6.0
+#define STREET_MODEL_WIDTH 94.0 * 3
+#define STREET_MODEL_LENGTH 94.0 * 3
+#define STREET_MODEL_SCALE 2.0
 #define STREET_GRID_SIZE 5
 vector<vector <ModelTransform>> street_grid(STREET_GRID_SIZE);
 
@@ -117,7 +117,7 @@ void display(){
     for(int i = 0; i < SH_NUM_PROGRAM_TYPES; i++){
         glUseProgram(programs[i].programID);
         
-        //Declare your uniform variables that will be used in your shaders
+        //Declarell your uniform variables that will be used in your shaders
         int view_mat_location = glGetUniformLocation (programs[i].programID, SH_UNIFORM_VIEW);
         int proj_mat_location = glGetUniformLocation (programs[i].programID, SH_UNIFORM_PERSPECTIVE);
         int wlp_location = glGetUniformLocation(programs[i].programID, SH_UNIFORM_LIGHT_POSITION);
@@ -290,16 +290,15 @@ void initialise_transforms(){
     models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
 }
 
-void init()
-{
+void init(){
     models[SKYBOX_INDEX].set_skybox(true);
     
     for(int i = 0; i < STREET_GRID_SIZE; i++){
         for(int j = 0; j < STREET_GRID_SIZE; j++){
             ModelTransform tran;
             tran.scale = vec3(STREET_MODEL_SCALE, STREET_MODEL_SCALE, STREET_MODEL_SCALE);
-            float offX = (i - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_LENGTH + STREET_MODEL_LENGTH) / 2);
-            float offZ = (j - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_WIDTH + STREET_MODEL_WIDTH) / 2);
+            float offX = (i - (STREET_GRID_SIZE / 2)) * (STREET_MODEL_LENGTH * STREET_MODEL_SCALE);
+            float offZ = (j - (STREET_GRID_SIZE / 2)) * (STREET_MODEL_WIDTH * STREET_MODEL_SCALE);
             cout << "Street (" << i << ", " << j << ") x:" << to_string(offX) << " z:" << offZ << endl;
             tran.translation = vec3(offX, 0.0, offZ);
             street_grid[i].push_back(tran);
