@@ -21,6 +21,7 @@ enum GAME_STATE {INIT_GAME, PLAY_GAME, WON_GAME, LOST_GAME, NOT_PLAYING};
 
 #define GAME_COUNTDOWN_DURATION 30 // seconds
 #define DISTANCE_COLLISION 7.0
+vector<vector <float>> object_starting_points(4);
 double game_countdown = 30; // time in seconds
 GAME_STATE game_state = NOT_PLAYING;
 int game_countdown_text_id;
@@ -58,6 +59,7 @@ void play_game(){
     double elapsed_seconds = current_seconds - previous_seconds;
     previous_seconds = current_seconds;
     string str;
+    int random_object_location = rand() % 4;
     
     switch (game_state) {
         case INIT_GAME:
@@ -67,7 +69,7 @@ void play_game(){
             models[VEHICLE_INDEX].modelTransform.translation = vec3(0.0, 1.0, 0.0);
             game_countdown = GAME_COUNTDOWN_DURATION;
             models[PICKUP_OBJECT_INDEX].modelTransform.scale = vec3(2.0, 2.0, 2.0);
-            models[PICKUP_OBJECT_INDEX].modelTransform.translation = vec3(343.0, 15.0, 347.0);
+            models[PICKUP_OBJECT_INDEX].modelTransform.translation = vec3(object_starting_points[random_object_location][0], 15.0, object_starting_points[random_object_location][1]);
             game_state = PLAY_GAME;
             break;
         case PLAY_GAME:
@@ -292,8 +294,8 @@ void init()
         for(int j = 0; j < STREET_GRID_SIZE; j++){
             ModelTransform tran;
             tran.scale = vec3(STREET_MODEL_SCALE, STREET_MODEL_SCALE, STREET_MODEL_SCALE);
-            float offX = (i - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_LENGTH + 40.0) / 2);
-            float offZ = (j - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_WIDTH + 40.0) / 2);
+            float offX = (i - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_LENGTH + STREET_MODEL_LENGTH) / 2);
+            float offZ = (j - (STREET_GRID_SIZE / 2)) * ((STREET_MODEL_WIDTH + STREET_MODEL_WIDTH) / 2);
             cout << "Street (" << i << ", " << j << ") x:" << to_string(offX) << " z:" << offZ << endl;
             tran.translation = vec3(offX, 0.0, offZ);
             street_grid[i].push_back(tran);
@@ -325,6 +327,16 @@ void init()
     game_countdown_text_id = add_text ("", x, y, size_px, r, g, b, a);
     game_distance_text = add_text("", x, y - 0.08, size_px, r, g, b, a);
     game_end_message_text = add_text("", -0.5, 0.5, size_px, r, g, b, a);
+    
+    object_starting_points[0].push_back(-960.0);
+    object_starting_points[0].push_back(-990.0);
+    object_starting_points[1].push_back(-953.0);
+    object_starting_points[1].push_back(958.0);
+    object_starting_points[2].push_back(921.0);
+    object_starting_points[2].push_back(940.0);
+    object_starting_points[3].push_back(931.0);
+    object_starting_points[3].push_back(-990.0);
+    
 }
 
 // Placeholder code for the keypress
