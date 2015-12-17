@@ -357,7 +357,7 @@ int main(int argc, char** argv){
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_3_2_CORE_PROFILE | GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGB);
     glutInitWindowSize(viewport_width, viewport_height);
-    glutCreateWindow("Street Vehicle");
+    glutCreateWindow("Game");
     
     // Tell glut where the display function is
     glutDisplayFunc(display);
