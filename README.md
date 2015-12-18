@@ -1,6 +1,6 @@
 # opengl-game
 
-This game was made as the final assignment of a Computer Graphics module.
+OpenGL game created for the final assignment of the Computer Graphics CS4052 module at TCD.
 
 ## Controls
 ### Camera Mode Selection
