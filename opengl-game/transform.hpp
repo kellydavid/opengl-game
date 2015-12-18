@@ -28,8 +28,8 @@ public:
 
 class CameraTransform{
 public:
-    const float fraction = 5.5;
-    const float angle_inc = 0.1;
+    const float fraction = 4.0;
+    const float angle_inc = 0.05;
     float angle = 0.0;
     float lx = 0.0, lz = -1.0f;
     vec3 eye;

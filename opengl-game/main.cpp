@@ -205,7 +205,7 @@ void UpdateKeys(){
     
     // object
     float inc = 4.0;
-    float angle = 3.0;
+    float angle = 1.5;
     
     if(p_forward){
         float radians_angle = models[VEHICLE_INDEX].modelTransform.rotation.v[1] * (M_PI / 180);
